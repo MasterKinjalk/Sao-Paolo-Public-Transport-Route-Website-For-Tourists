@@ -10,8 +10,8 @@
 | Captain     |  kinjalk2@illinois.edu |
 | Member1     |   Ajay Satish          |
 | Member1     |   ajays4@illinois.edu  |
-| Member2     |    Bharati Kulkarni    |
-| Member2     |  bharati1@illinois.edu |
+| Member2     |   Sriharsha Banda      |
+| Member2     |  bandas2@illinois.edu  |
 | Member3     |    Mohammed Alsaad     |
 | Member3     |  malsaad3@illinois.edu |
 
