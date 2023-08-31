@@ -8,8 +8,8 @@
 | TeamName    |         QuertQuery     |
 | Captain     |       Kinjal Parth     |
 | Captain     |  kinjalk2@illinois.edu |
-| Member1     |                        |
-| Member1     |   kevin2@illinois.edu  |
+| Member1     |   Ajay Satish          |
+| Member1     |   ajays4@illinois.edu  |
 | Member2     |    Bharati Kulkarni    |
 | Member2     |  bharati1@illinois.edu |
 | Member3     |    Mohammed Alsaad     |
