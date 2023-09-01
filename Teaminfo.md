@@ -8,12 +8,12 @@
 | TeamName    |         QuertQuery     |
 | Captain     |       Kinjal Parth     |
 | Captain     |  kinjalk2@illinois.edu |
-| Member2     |   Ajay Satish          |
-| Member2     |   ajays4@illinois.edu  |
-| Member3     |   Sriharsha Banda      |
-| Member3     |  bandas2@illinois.edu  |
-| Member4     |    Mohammed Alsaad     |
-| Member4     |  malsaad3@illinois.edu |
+| Member1     |   Ajay Satish          |
+| Member1     |   ajays4@illinois.edu  |
+| Member2     |   Sriharsha Banda      |
+| Member2     |  bandas2@illinois.edu  |
+| Member3     |    Mohammed Alsaad     |
+| Member3     |  malsaad3@illinois.edu |
 
 ## Project Information
 
