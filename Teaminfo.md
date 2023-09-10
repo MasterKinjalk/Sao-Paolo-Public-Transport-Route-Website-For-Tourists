@@ -1,4 +1,4 @@
-# team000-sample
+# team124-QuertyQueries
 
 ## Basic Information
 
@@ -6,7 +6,7 @@
 | ----------- | ---------------------- |
 | TeamID      |        Team-046        |
 | TeamName    |         QuertQuery     |
-| Captain     |       Kinjal Parth     |
+| Captain     |       Kinjalk Parth     |
 | Captain     |  kinjalk2@illinois.edu |
 | Member1     |   Ajay Satish          |
 | Member1     |   ajays4@illinois.edu  |
