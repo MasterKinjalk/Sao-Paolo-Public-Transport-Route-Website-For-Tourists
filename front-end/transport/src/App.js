@@ -6,7 +6,6 @@ import Profile from './Auth/Profile.jsx';
 import MapC from './Map/Map.jsx';
 import Feedback from './Feedback/Feedback.jsx';
 import { useEffect, useState } from 'react';
-
 import {
   AppBar,
   Toolbar,
@@ -14,17 +13,21 @@ import {
   Button,
   CircularProgress,
   Box,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  useMediaQuery,
 } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 
 function App() {
   const { isLoading, isAuthenticated, user, getAccessTokenSilently } =
     useAuth0();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const isSmallScreen = useMediaQuery('(max-width:600px)');
 
-  if (isLoading) {
-    return <CircularProgress />;
-  }
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   // useEffect(() => {
   //   const sendTokenToBackend = async () => {
   //     if (isAuthenticated) {
@@ -50,6 +53,34 @@ function App() {
   //   }
   // }, [isAuthenticated, getAccessTokenSilently, user]);
 
+  if (isLoading) {
+    return <CircularProgress />;
+  }
+
+  const toggleDrawer = (open) => (event) => {
+    if (
+      event.type === 'keydown' &&
+      (event.key === 'Tab' || event.key === 'Shift')
+    ) {
+      return;
+    }
+    setDrawerOpen(open);
+  };
+
+  const drawerList = (
+    <List>
+      <ListItem component={Link} to="/profile">
+        <ListItemText primary="Profile" />
+      </ListItem>
+      <ListItem component={Link} to="/map">
+        <ListItemText primary="Map" />
+      </ListItem>
+      <ListItem component={Link} to="/feedback">
+        <ListItemText primary="Feedback" />
+      </ListItem>
+    </List>
+  );
+
   return (
     <div className="App">
       <AppBar position="static">
@@ -57,34 +88,66 @@ function App() {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Transport
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {isAuthenticated && (
-              <Link
-                to="/profile"
-                style={{ textDecoration: 'none', color: 'inherit' }}
+          {/* <LoginButton /> */}
+
+          {isAuthenticated && isSmallScreen && (
+            <Box>
+              <IconButton
+                size="large"
+                edge="end"
+                color="inherit"
+                aria-label="menu"
+                onClick={toggleDrawer(true)}
+                sx={{ mr: 1 }}
               >
-                <Button color="inherit">Profile</Button>
-              </Link>
-            )}
-            {isAuthenticated && (
-              <Link
-                to="/map"
-                style={{ textDecoration: 'none', color: 'inherit' }}
+                <MenuIcon />
+              </IconButton>
+              <Drawer
+                anchor="right"
+                open={drawerOpen}
+                onClose={toggleDrawer(false)}
               >
-                <Button color="inherit">Map</Button>
-              </Link>
-            )}
-            {isAuthenticated && (
-              <Link
-                to="/feedback"
-                style={{ textDecoration: 'none', color: 'inherit' }}
-              >
-                <Button color="inherit">Feedback</Button>
-              </Link>
-            )}
-            <Box marginLeft={2}>
-              {isAuthenticated ? <LogoutButton /> : <LoginButton />}
+                {drawerList}
+              </Drawer>
+              <LogoutButton />
             </Box>
+          )}
+
+          <Box
+            sx={{
+              display: { xs: 'none', sm: 'flex' },
+              alignItems: 'center',
+            }}
+          >
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/profile"
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <Button color="inherit">Profile</Button>
+                </Link>
+                <Link
+                  to="/map"
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <Button color="inherit">Map</Button>
+                </Link>
+                <Link
+                  to="/feedback"
+                  style={{
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    marginRight: '5px',
+                  }}
+                >
+                  <Button color="inherit">Feedback</Button>
+                </Link>
+                <LogoutButton />
+              </>
+            ) : (
+              <LoginButton />
+            )}
           </Box>
         </Toolbar>
       </AppBar>
