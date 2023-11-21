@@ -4,6 +4,7 @@ import LoginButton from './Auth/Login.jsx';
 import LogoutButton from './Auth/Logout.jsx';
 import Profile from './Auth/Profile.jsx';
 import MapC from './Map/Map.jsx';
+import Feedback from './Feedback/Feedback.jsx';
 import { useEffect, useState } from 'react';
 
 import {
@@ -73,6 +74,14 @@ function App() {
                 <Button color="inherit">Map</Button>
               </Link>
             )}
+            {isAuthenticated && (
+              <Link
+                to="/feedback"
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
+                <Button color="inherit">Feedback</Button>
+              </Link>
+            )}
             <Box marginLeft={2}>
               {isAuthenticated ? <LogoutButton /> : <LoginButton />}
             </Box>
@@ -98,6 +107,10 @@ function App() {
         <Route
           path="/map"
           element={isAuthenticated ? <MapC /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/feedback"
+          element={isAuthenticated ? <Feedback /> : <Navigate to="/login" />}
         />
       </Routes>
     </div>
