@@ -3,7 +3,8 @@ import { useAuth0 } from '@auth0/auth0-react';
 import LoginButton from './Auth/Login.jsx';
 import LogoutButton from './Auth/Logout.jsx';
 import Profile from './Auth/Profile.jsx';
-import Map from './Map/Map.jsx';
+import MapC from './Map/Map.jsx';
+import { useEffect, useState } from 'react';
 
 import {
   AppBar,
@@ -13,23 +14,40 @@ import {
   CircularProgress,
   Box,
 } from '@mui/material';
-// import { styled } from '@mui/system';
-
-// const StyledNav = styled('nav')({
-//   display: 'flex',
-//   justifyContent: 'space-between',
-//   alignItems: 'center',
-//   padding: '10px 20px',
-//   color: 'white',
-//   width: '100%',
-// });
 
 function App() {
-  const { isLoading, isAuthenticated } = useAuth0();
+  const { isLoading, isAuthenticated, user, getAccessTokenSilently } =
+    useAuth0();
 
   if (isLoading) {
     return <CircularProgress />;
   }
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  // useEffect(() => {
+  //   const sendTokenToBackend = async () => {
+  //     if (isAuthenticated) {
+  //       try {
+  //         const accessToken = await getAccessTokenSilently();
+  //         const response = await fetch('', {
+  //           method: 'POST',
+  //           headers: {
+  //             Authorization: `Bearer ${accessToken}`,
+  //             'Content-Type': 'application/json',
+  //           },
+  //           body: JSON.stringify({ token: accessToken, user }),
+  //         });
+  //         console.log('Response from backend:', response);
+  //       } catch (error) {
+  //         console.error('Error sending token to backend:', error);
+  //       }
+  //     }
+  //   };
+
+  //   if (isAuthenticated) {
+  //     sendTokenToBackend();
+  //   }
+  // }, [isAuthenticated, getAccessTokenSilently, user]);
 
   return (
     <div className="App">
@@ -55,12 +73,6 @@ function App() {
                 <Button color="inherit">Map</Button>
               </Link>
             )}
-            {/* <Link
-              to="/map"
-              style={{ textDecoration: 'none', color: 'inherit' }}
-            >
-              <Button color="inherit">Map</Button>
-            </Link> */}
             <Box marginLeft={2}>
               {isAuthenticated ? <LogoutButton /> : <LoginButton />}
             </Box>
@@ -85,7 +97,7 @@ function App() {
         />
         <Route
           path="/map"
-          element={isAuthenticated ? <Map /> : <Navigate to="/login" />}
+          element={isAuthenticated ? <MapC /> : <Navigate to="/login" />}
         />
       </Routes>
     </div>
