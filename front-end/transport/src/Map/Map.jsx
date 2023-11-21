@@ -98,6 +98,7 @@
 // };
 
 // export default MapC;
+import 'mapbox-gl/dist/mapbox-gl.css';
 import * as React from 'react';
 import Map, { FullscreenControl } from 'react-map-gl';
 import { Box } from '@mui/material';
