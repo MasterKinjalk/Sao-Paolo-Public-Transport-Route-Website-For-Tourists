@@ -5,6 +5,8 @@ import LogoutButton from './Auth/Logout.jsx';
 import Profile from './Auth/Profile.jsx';
 import MapC from './Map/Map.jsx';
 import Feedback from './Feedback/Feedback.jsx';
+import NavigateMap from './Map/NavigateMap.jsx';
+import PlotMap from './Map/PlotMap.jsx';
 import { useEffect, useState } from 'react';
 import {
   AppBar,
@@ -53,6 +55,21 @@ function App() {
   //   }
   // }, [isAuthenticated, getAccessTokenSilently, user]);
 
+  useEffect(() => {
+    const t = () => {
+      if (isAuthenticated) {
+        console.log(isAuthenticated);
+        console.log(user);
+        console.log(
+          getAccessTokenSilently().then((accessToken) => {
+            console.log(accessToken);
+          })
+        );
+      }
+    };
+    t();
+  }, [isAuthenticated, user]);
+
   if (isLoading) {
     return <CircularProgress />;
   }
@@ -75,6 +92,12 @@ function App() {
       <ListItem component={Link} to="/map">
         <ListItemText primary="Map" />
       </ListItem>
+      <ListItem component={Link} to="/navigateMap">
+        <ListItemText primary="Navigate Map" />
+      </ListItem>
+      <ListItem component={Link} to="/plotMap">
+        <ListItemText primary="Plot Map" />
+      </ListItem>
       <ListItem component={Link} to="/feedback">
         <ListItemText primary="Feedback" />
       </ListItem>
@@ -82,14 +105,14 @@ function App() {
   );
 
   return (
-    <div className="App">
+    <div>
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Transport
           </Typography>
           {/* <LoginButton /> */}
-
+          {!isAuthenticated && isSmallScreen && <LoginButton />}
           {isAuthenticated && isSmallScreen && (
             <Box>
               <IconButton
@@ -134,6 +157,18 @@ function App() {
                   <Button color="inherit">Map</Button>
                 </Link>
                 <Link
+                  to="/navigateMap"
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <Button color="inherit">NavigateMap</Button>
+                </Link>
+                <Link
+                  to="/plotMap"
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <Button color="inherit">PlotMap</Button>
+                </Link>
+                <Link
                   to="/feedback"
                   style={{
                     textDecoration: 'none',
@@ -170,6 +205,14 @@ function App() {
         <Route
           path="/map"
           element={isAuthenticated ? <MapC /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/navigateMap"
+          element={isAuthenticated ? <NavigateMap /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/plotMap"
+          element={isAuthenticated ? <PlotMap /> : <Navigate to="/login" />}
         />
         <Route
           path="/feedback"
