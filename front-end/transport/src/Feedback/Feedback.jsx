@@ -1,19 +1,27 @@
 import React, { useState } from 'react';
-import { Select, MenuItem, TextField, Button, Box } from '@mui/material';
+import {
+  Select,
+  MenuItem,
+  TextField,
+  Button,
+  Box,
+  Autocomplete,
+} from '@mui/material';
 
 const sample = [
-  { id: '1', name: 'test1' },
-  { id: '2', name: 'test2' },
+  { id: '1', name: 'chennai' },
+  { id: '2', name: 'chicago' },
   { id: '3', name: 'test3' },
   { id: '4', name: 'test4' },
 ];
 
 const Feedback = () => {
-  const [selectedId, setSelectedId] = useState('');
+  const [selected, setSelected] = useState(null);
   const [review, setReview] = useState('');
 
-  const handleSelectChange = (e) => {
-    setSelectedId(e.target.value);
+  const handleSelectChange = (e, newValue) => {
+    setSelected(newValue);
+    console.log(newValue);
   };
 
   const handleReviewChange = (e) => {
@@ -23,12 +31,12 @@ const Feedback = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    if (!selectedId || !review) {
+    if (!selected || !review) {
       alert('Please select a name and provide a review');
       return;
     }
 
-    console.log(selectedId, review);
+    console.log(selected.name, review);
     // try {
     //   const response = await fetch('YOUR_BACKEND_ENDPOINT', {
     //     method: 'POST',
@@ -55,7 +63,7 @@ const Feedback = () => {
       <h2>Feedback</h2>
       <form onSubmit={submitHandler}>
         <div>
-          <Select
+          {/* <Select
             label="Select a Name"
             value={selectedId}
             onChange={handleSelectChange}
@@ -69,7 +77,16 @@ const Feedback = () => {
                 {item.name}
               </MenuItem>
             ))}
-          </Select>
+          </Select> */}
+          <Autocomplete
+            value={selected} // Controlled: Ensure it's consistently controlled
+            onChange={handleSelectChange}
+            options={sample}
+            getOptionLabel={(option) => (option && option.name) || ''}
+            renderInput={(params) => (
+              <TextField {...params} label="Select a Name" fullWidth />
+            )}
+          />
         </div>
         <div style={{ marginTop: '1rem' }}>
           <TextField
