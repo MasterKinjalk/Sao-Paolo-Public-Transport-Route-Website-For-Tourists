@@ -213,10 +213,11 @@ const MapWithMarkers = ({ stopsData, centers }) => {
     const updatedCoordinates = [...coordinates, [lat, lon]];
 
     if (updatedCoordinates.length > 2) {
-      updatedCoordinates.shift(); // Remove the oldest coordinate
+      updatedCoordinates.shift();
     }
 
     setCoordinates(updatedCoordinates);
+    localStorage.setItem('coordinates', JSON.stringify(updatedCoordinates));
   };
 
   console.log(coordinates);
