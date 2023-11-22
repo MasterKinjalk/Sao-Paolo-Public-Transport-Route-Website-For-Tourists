@@ -7,6 +7,7 @@ import MapC from './Map/Map.jsx';
 import Feedback from './Feedback/Feedback.jsx';
 import NavigateMap from './Map/NavigateMap.jsx';
 import PlotMap from './Map/PlotMap.jsx';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useEffect, useState } from 'react';
 import {
   AppBar,
@@ -20,6 +21,8 @@ import {
   List,
   ListItem,
   ListItemText,
+  MenuItem,
+  Menu,
   useMediaQuery,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -28,6 +31,8 @@ function App() {
   const { isLoading, isAuthenticated, user, getAccessTokenSilently } =
     useAuth0();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+
   const isSmallScreen = useMediaQuery('(max-width:600px)');
 
   // useEffect(() => {
@@ -104,6 +109,30 @@ function App() {
     </List>
   );
 
+  const menuItems = [
+    { to: '/map', text: 'Map' },
+    { to: '/navigateMap', text: 'Navigate Map' },
+    { to: '/plotMap', text: 'Plot Map' },
+  ];
+
+  const renderMenuItems = () => {
+    return menuItems.map((item) => (
+      <MenuItem key={item.to} onClick={handleClose}>
+        <Link to={item.to} style={{ textDecoration: 'none', color: 'inherit' }}>
+          {item.text}
+        </Link>
+      </MenuItem>
+    ));
+  };
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
     <div>
       <AppBar position="static">
@@ -150,7 +179,7 @@ function App() {
                 >
                   <Button color="inherit">Profile</Button>
                 </Link>
-                <Link
+                {/* <Link
                   to="/map"
                   style={{ textDecoration: 'none', color: 'inherit' }}
                 >
@@ -167,7 +196,26 @@ function App() {
                   style={{ textDecoration: 'none', color: 'inherit' }}
                 >
                   <Button color="inherit">PlotMap</Button>
-                </Link>
+                </Link> */}
+                <Box>
+                  <Button
+                    color="inherit"
+                    aria-controls="map-menu"
+                    aria-haspopup="true"
+                    onClick={handleClick}
+                    endIcon={<ArrowDropDownIcon sx={{ marginLeft: '-10px' }} />}
+                  >
+                    Map Options
+                  </Button>
+                  <Menu
+                    id="map-menu"
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleClose}
+                  >
+                    {renderMenuItems()}
+                  </Menu>
+                </Box>
                 <Link
                   to="/feedback"
                   style={{
