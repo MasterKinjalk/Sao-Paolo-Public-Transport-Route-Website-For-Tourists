@@ -2,6 +2,7 @@ import { Route, Routes, Link, Navigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import LoginButton from './Auth/Login.jsx';
 import LogoutButton from './Auth/Logout.jsx';
+import LoginPage from './Auth/LoginPage.jsx';
 import Profile from './Auth/Profile.jsx';
 import MapC from './Map/Map.jsx';
 import Feedback from './Feedback/Feedback.jsx';
@@ -134,8 +135,8 @@ function App() {
   };
 
   return (
-    <div>
-      <AppBar position="static">
+    <div style={{ margin: 0 }}>
+      <AppBar position="static" sx={{ margin: 0 }}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Transport
@@ -236,6 +237,7 @@ function App() {
       </AppBar>
 
       <Routes>
+        <Route path="/login" element={<LoginPage />} />
         <Route
           path="/profile"
           element={isAuthenticated ? <Profile /> : <Navigate to="/login" />}
