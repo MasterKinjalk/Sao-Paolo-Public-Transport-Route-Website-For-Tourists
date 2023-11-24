@@ -6,8 +6,10 @@ import {
   Button,
   Box,
   Autocomplete,
+  useMediaQuery,
 } from '@mui/material';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const sample = [
   { id: '1', name: 'chennai' },
   { id: '2', name: 'chicago' },
@@ -18,6 +20,7 @@ const sample = [
 const Feedback = () => {
   const [selected, setSelected] = useState(null);
   const [review, setReview] = useState('');
+  const smallScreen = useMediaQuery('(max-width:600px)');
 
   const handleSelectChange = (e, newValue) => {
     setSelected(newValue);
@@ -32,7 +35,13 @@ const Feedback = () => {
     e.preventDefault();
 
     if (!selected || !review) {
-      alert('Please select a name and provide a review');
+      const position = smallScreen
+        ? toast.POSITION.TOP_CENTER
+        : toast.POSITION.TOP_RIGHT;
+      toast(`Please select a name and provide a review`, {
+        position: position,
+      });
+      // alert('Please select a name and provide a review');
       return;
     }
 
@@ -61,6 +70,11 @@ const Feedback = () => {
   return (
     <Box sx={{ maxWidth: 400, margin: 'auto', padding: 2 }}>
       <h2>Feedback</h2>
+      <ToastContainer
+        style={{
+          marginTop: smallScreen ? '25px' : '70px',
+        }}
+      />
       <form onSubmit={submitHandler}>
         <div>
           {/* <Select
