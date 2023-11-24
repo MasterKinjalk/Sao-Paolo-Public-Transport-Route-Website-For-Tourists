@@ -25,12 +25,31 @@ const MapC = () => {
     zoom: 3.5,
   });
 
+  const [Coordinate, setCoordinate] = React.useState(null);
+
+  // Function to check and retrieve coordinates from local storage
+  React.useEffect(() => {
+    const getCoordinatesFromLocalStorage = () => {
+      const Coordinatesv = localStorage.getItem('startCoordinate');
+
+      if (Coordinatesv) {
+        setCoordinate(JSON.parse(Coordinatesv));
+      }
+    };
+
+    getCoordinatesFromLocalStorage();
+  }, []);
+
   // const maxBounds = [-46.8267, -23.9927, -46.3565, -23.3565];
 
   const addDirections = (map) => {
     const directions = new MapboxDirections({
       accessToken: process.env.REACT_APP_MAPBOX,
-      unit: 'metric', // Use metric or imperial as per your preference
+      unit: 'metric',
+      waypoints:
+        Coordinate && Coordinate.length === 2
+          ? [{ coordinates: Coordinate[0] }, { coordinates: Coordinate[1] }]
+          : undefined,
     });
 
     map.addControl(directions, 'top-left');
