@@ -5,10 +5,10 @@ import { useEffect } from 'react';
 
 const Profile = () => {
   const { user, isAuthenticated, isLoading } = useAuth0();
-  useEffect(() => {
-    console.log(user);
-    console.log(isAuthenticated);
-  }, [isAuthenticated]);
+  // useEffect(() => {
+  //   console.log(user);
+  //   console.log(isAuthenticated);
+  // }, [isAuthenticated]);
 
   // if (isAuthenticated) {
   //   console.log(user);
