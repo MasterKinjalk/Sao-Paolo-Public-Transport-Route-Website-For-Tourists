@@ -201,7 +201,7 @@ const MapWithMarkers = ({ stopsData, centers }) => {
   // const [hoveredStop, setHoveredStop] = React.useState(null);
   const [coordinates, setCoordinates] = React.useState([]);
 
-  const f100 = stopsData.slice(0, 100);
+  const f100 = stopsData.slice(0, 500);
 
   const handleMarkerClick = (name, lat, lon) => {
     toast(`Clicked on ${name} with lat:${lat} and lon:${lon}`, {
@@ -209,8 +209,8 @@ const MapWithMarkers = ({ stopsData, centers }) => {
     });
   };
 
-  const handleAddCoordinates = (lat, lon) => {
-    const updatedCoordinates = [...coordinates, [lat, lon]];
+  const handleAddCoordinates = (name, lat, lon) => {
+    const updatedCoordinates = [...coordinates, [name, lat, lon]];
 
     if (updatedCoordinates.length > 2) {
       updatedCoordinates.shift();
@@ -234,14 +234,15 @@ const MapWithMarkers = ({ stopsData, centers }) => {
         {f100.map((stop, index) => (
           <Marker
             key={index}
-            latitude={parseFloat(stop[1])}
-            longitude={parseFloat(stop[2])}
+            latitude={parseFloat(stop[2])}
+            longitude={parseFloat(stop[3])}
           >
+            {/* {console.log('Stop data:', stop)} */}
             <div
               onClick={(e) => {
                 e.preventDefault();
-                handleMarkerClick(stop[0], stop[1], stop[2]);
-                handleAddCoordinates(stop[1], stop[2]);
+                handleMarkerClick(stop[1], stop[2], stop[3]);
+                handleAddCoordinates(stop[1], stop[2], stop[3]);
               }}
             >
               {/* Your marker design */}
