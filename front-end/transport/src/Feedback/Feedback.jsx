@@ -38,7 +38,7 @@ const Feedback = () => {
       const position = smallScreen
         ? toast.POSITION.TOP_CENTER
         : toast.POSITION.TOP_RIGHT;
-      toast(`Please select a name and provide a review`, {
+      toast.error('Please select an ID and provide a review', {
         position: position,
       });
       // alert('Please select a name and provide a review');
@@ -98,7 +98,7 @@ const Feedback = () => {
             options={sample}
             getOptionLabel={(option) => (option && option.name) || ''}
             renderInput={(params) => (
-              <TextField {...params} label="Select a Name" fullWidth />
+              <TextField {...params} label="Select a id" fullWidth />
             )}
           />
         </div>
