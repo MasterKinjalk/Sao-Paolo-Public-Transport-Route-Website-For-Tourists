@@ -37,19 +37,22 @@ function App() {
   const isSmallScreen = useMediaQuery('(max-width:600px)');
 
   // useEffect(() => {
-  //   const sendTokenToBackend = async () => {
+  //   const sendToAPI = async () => {
   //     if (isAuthenticated) {
   //       try {
-  //         const accessToken = await getAccessTokenSilently();
-  //         const response = await fetch('', {
-  //           method: 'POST',
-  //           headers: {
-  //             Authorization: `Bearer ${accessToken}`,
-  //             'Content-Type': 'application/json',
-  //           },
-  //           body: JSON.stringify({ token: accessToken, user }),
-  //         });
-  //         console.log('Response from backend:', response);
+  //         // const accessToken = await getAccessTokenSilently();
+  //         const response = await fetch(
+  //           'https://cs411-team124-quertyqueries.uc.r.appspot.com/signup',
+  //           {
+  //             method: 'POST',
+  //             headers: {
+  //               // Authorization: `Bearer ${accessToken}`,
+  //               'Content-Type': 'application/json',
+  //             },
+  //             body: JSON.stringify({ name: user.nickname, email: user.email }),
+  //           }
+  //         );
+  //         console.log('Sent', response);
   //       } catch (error) {
   //         console.error('Error sending token to backend:', error);
   //       }
@@ -57,20 +60,21 @@ function App() {
   //   };
 
   //   if (isAuthenticated) {
-  //     sendTokenToBackend();
+  //     sendToAPI();
   //   }
-  // }, [isAuthenticated, getAccessTokenSilently, user]);
+  // }, [isAuthenticated, user]);
 
   useEffect(() => {
     const t = () => {
       if (isAuthenticated) {
         console.log(isAuthenticated);
         console.log(user);
-        console.log(
-          getAccessTokenSilently().then((accessToken) => {
-            console.log(accessToken);
-          })
-        );
+        console.log(JSON.stringify({ name: user.nickname, email: user.email }));
+        // console.log(
+        //   getAccessTokenSilently().then((accessToken) => {
+        //     console.log(accessToken);
+        //   })
+        // );
       }
     };
     t();
@@ -95,9 +99,9 @@ function App() {
       <ListItem component={Link} to="/profile">
         <ListItemText primary="Profile" />
       </ListItem>
-      <ListItem component={Link} to="/map">
+      {/* <ListItem component={Link} to="/map">
         <ListItemText primary="Map" />
-      </ListItem>
+      </ListItem> */}
       <ListItem component={Link} to="/navigateMap">
         <ListItemText primary="Navigate Map" />
       </ListItem>
@@ -111,7 +115,7 @@ function App() {
   );
 
   const menuItems = [
-    { to: '/map', text: 'Map' },
+    // { to: '/map', text: 'Map' },
     { to: '/navigateMap', text: 'Navigate Map' },
     { to: '/plotMap', text: 'Plot Map' },
   ];
