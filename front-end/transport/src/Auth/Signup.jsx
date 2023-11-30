@@ -40,7 +40,6 @@ const SignupPage = () => {
       );
 
       if (response.ok) {
-        // Signup successful, redirect to login page
         console.log(response);
         navigate('/login');
       } else {
