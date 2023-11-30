@@ -1,12 +1,12 @@
 import { Route, Routes, Link, Navigate } from 'react-router-dom';
-import { useAuth0 } from '@auth0/auth0-react';
-import LoginButton from './Auth/Login.jsx';
 import LogoutButton from './Auth/Logout.jsx';
 import LoginPage from './Auth/LoginPage.jsx';
+// import Feedback from './Feedback/Feedbk.jsx';
 import Profile from './Auth/Profile.jsx';
 import MapC from './Map/Map.jsx';
 import Feedback from './Feedback/Feedback.jsx';
 import NavigateMap from './Map/NavigateMap.jsx';
+import SignupPage from './Auth/Signup.jsx';
 import PlotMap from './Map/PlotMap.jsx';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useEffect, useState } from 'react';
@@ -16,6 +16,7 @@ import {
   Typography,
   Button,
   CircularProgress,
+  ListItemButton,
   Box,
   IconButton,
   Drawer,
@@ -29,12 +30,24 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 
 function App() {
-  const { isLoading, isAuthenticated, user, getAccessTokenSilently } =
-    useAuth0();
+  // const { isLoading, isAuthenticated, user, getAccessTokenSilently } =
+  //   useAuth0();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const authStausLocalStorage = localStorage.getItem('loginstatus');
+
+  useEffect(() => {
+    if (authStausLocalStorage === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   const isSmallScreen = useMediaQuery('(max-width:600px)');
+
+  const authHandler = (status) => {
+    setIsAuthenticated(status);
+  };
 
   // useEffect(() => {
   //   const sendToAPI = async () => {
@@ -64,25 +77,25 @@ function App() {
   //   }
   // }, [isAuthenticated, user]);
 
-  useEffect(() => {
-    const t = () => {
-      if (isAuthenticated) {
-        console.log(isAuthenticated);
-        console.log(user);
-        console.log(JSON.stringify({ name: user.nickname, email: user.email }));
-        // console.log(
-        //   getAccessTokenSilently().then((accessToken) => {
-        //     console.log(accessToken);
-        //   })
-        // );
-      }
-    };
-    t();
-  }, [isAuthenticated, user]);
+  // useEffect(() => {
+  //   const t = () => {
+  //     if (isAuthenticated) {
+  //       console.log(isAuthenticated);
+  //       console.log(user);
+  //       console.log(JSON.stringify({ name: user.nickname, email: user.email }));
+  //       // console.log(
+  //       //   getAccessTokenSilently().then((accessToken) => {
+  //       //     console.log(accessToken);
+  //       //   })
+  //       // );
+  //     }
+  //   };
+  //   t();
+  // }, [isAuthenticated, user]);
 
-  if (isLoading) {
-    return <CircularProgress />;
-  }
+  // if (isLoading) {
+  //   return <CircularProgress />;
+  // }
 
   const toggleDrawer = (open) => (event) => {
     if (
@@ -95,13 +108,22 @@ function App() {
   };
 
   const drawerList = (
-    <List>
+    <List sx={{ textDecoration: 'none', color: 'inherit' }}>
       <ListItem component={Link} to="/profile">
         <ListItemText primary="Profile" />
       </ListItem>
       {/* <ListItem component={Link} to="/map">
         <ListItemText primary="Map" />
       </ListItem> */}
+      <ListItemButton
+        component="a"
+        href={`${process.env.REACT_APP_SERVER_BE}/city_public_transit_stops`}
+        target="_blank"
+        rel="noopener noreferrer"
+        sx={{ color: 'rgb(85,26,139)' }}
+      >
+        <ListItemText primary="All Routes" />
+      </ListItemButton>
       <ListItem component={Link} to="/navigateMap">
         <ListItemText primary="Navigate Map" />
       </ListItem>
@@ -146,7 +168,7 @@ function App() {
             Transport
           </Typography>
           {/* <LoginButton /> */}
-          {!isAuthenticated && isSmallScreen && <LoginButton />}
+          {/* {!isAuthenticated && isSmallScreen && <LoginButton />} */}
           {isAuthenticated && isSmallScreen && (
             <Box>
               <IconButton
@@ -166,7 +188,7 @@ function App() {
               >
                 {drawerList}
               </Drawer>
-              <LogoutButton />
+              <LogoutButton authstate={authHandler} />
             </Box>
           )}
 
@@ -202,6 +224,16 @@ function App() {
                 >
                   <Button color="inherit">PlotMap</Button>
                 </Link> */}
+                <Button color="inherit">
+                  <a
+                    href={`${process.env.REACT_APP_SERVER_BE}/city_public_transit_stops.html`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
+                    All Routes
+                  </a>
+                </Button>
                 <Box>
                   <Button
                     color="inherit"
@@ -231,17 +263,30 @@ function App() {
                 >
                   <Button color="inherit">Feedback</Button>
                 </Link>
-                <LogoutButton />
+                <LogoutButton authstate={authHandler} />
               </>
-            ) : (
-              <LoginButton />
-            )}
+            ) : null}
           </Box>
         </Toolbar>
       </AppBar>
 
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/signup"
+          element={
+            isAuthenticated ? <Navigate to="/profile" /> : <SignupPage />
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            isAuthenticated ? (
+              <Navigate to="/profile" />
+            ) : (
+              <LoginPage authstate={authHandler} />
+            )
+          }
+        />
         <Route
           path="/profile"
           element={isAuthenticated ? <Profile /> : <Navigate to="/login" />}
