@@ -1,8 +1,0 @@
-#app.yaml
-runtime: python38
-
-env_variables:
-  CLOUD_SQL_USERNAME: 'deployment'
-  CLOUD_SQL_PASSWORD: 'test@12345'
-  CLOUD_SQL_DATABASE_NAME: 'Transport'
-  CLOUD_SQL_CONNECTION_NAME: 'cs411-team124-quertyqueries:us-central1:cs411-team124-quertyqueries-db'
