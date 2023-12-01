@@ -5,7 +5,7 @@ const LogoutButton = ({ authstate }) => {
   const handleLogout = () => {
     localStorage.removeItem('loginstatus');
     localStorage.removeItem('email');
-    // authstate(false);
+    authstate(false);
 
     console.log('Logout clicked');
   };
