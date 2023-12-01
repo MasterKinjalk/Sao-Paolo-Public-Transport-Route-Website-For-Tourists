@@ -71,8 +71,8 @@ const MapC = () => {
     // const p1_lon = Coordinate[0][2];
     // const p2_lat = Coordinate[1][1];
     // const p2_lon = Coordinate[1][2];
-    const [coord1, coord2] = Coordinate;
-    console.log(coord1, coord2);
+    // const [coord1, coord2] = Coordinate;
+    // console.log(coord1, coord2);
 
     const directions = new MapboxDirections({
       accessToken: process.env.REACT_APP_MAPBOX,
@@ -120,18 +120,34 @@ const MapC = () => {
         // maxBounds={maxBounds}
         onLoad={(event) => handleMapLoad(event.target)}
       >
-        <CopyIconContainer>
-          <Tooltip title="Copy p1 coordinates" placement="left">
-            <IconButton onClick={() => handleCopyClick(1)}>
+        {Coordinate && Coordinate.length === 2 ? (
+          <CopyIconContainer>
+            <Tooltip title="Copy p1 coordinates" placement="left">
+              <IconButton onClick={() => handleCopyClick(1)}>
+                <FileCopyIcon />1
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Copy p2 coordinates" placement="left">
+              <IconButton onClick={() => handleCopyClick(2)}>
+                <FileCopyIcon />2
+              </IconButton>
+            </Tooltip>
+          </CopyIconContainer>
+        ) : (
+          ''
+        )}
+        {/* <CopyIconContainer>
+         <Tooltip title="Copy p1 coordinates" placement="left">
+             <IconButton onClick={() => handleCopyClick(1)}>
               <FileCopyIcon />1
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Copy p2 coordinates" placement="left">
-            <IconButton onClick={() => handleCopyClick(2)}>
-              <FileCopyIcon />2
-            </IconButton>
-          </Tooltip>
-        </CopyIconContainer>
+           </IconButton>
+           </Tooltip>
+           <Tooltip title="Copy p2 coordinates" placement="left">
+             <IconButton onClick={() => handleCopyClick(2)}>
+               <FileCopyIcon />2
+             </IconButton>
+           </Tooltip>
+         </CopyIconContainer> */}
 
         <FullscreenControlContainer>
           <FullscreenControl />
