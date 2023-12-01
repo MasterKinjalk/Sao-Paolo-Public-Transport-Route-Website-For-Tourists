@@ -1,43 +1,262 @@
-import React from 'react';
-import { useAuth0 } from '@auth0/auth0-react';
-import { CircularProgress, Typography, Avatar, Box } from '@mui/material';
-import { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import {
+  CircularProgress,
+  Typography,
+  Box,
+  IconButton,
+  TextField,
+  Button,
+  Grid,
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
 
 const Profile = () => {
-  const { user, isAuthenticated, isLoading } = useAuth0();
-  // useEffect(() => {
-  //   console.log(user);
-  //   console.log(isAuthenticated);
-  // }, [isAuthenticated]);
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [oldemail, setoldEmail] = useState('');
+  const [newemail, setnewemail] = useState('');
+  const [newpassword, setnewPassword] = useState('');
+  const [oldPassword, setOldPassword] = useState('');
+  const [lastname, setLastname] = useState('');
+  const [firstname, setFirstname] = useState('');
 
-  // if (isAuthenticated) {
-  //   console.log(user);
-  // }
+  const lsemail = localStorage.getItem('email');
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const userData = await fetchUserFromAPI();
+        setUser(userData);
+        setoldEmail(userData.email || '');
+        setFirstname(userData.first_name || '');
+        setLastname(userData.last_name || '');
+      } catch (error) {
+        console.error('Error fetching user details:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserDetails();
+  }, []);
+
+  const handleEditClick = async (field) => {
+    if (field === 'email') {
+      console.log('edit email');
+      try {
+        console.log(oldemail + ' is old', newemail);
+        await updateEmailInAPI(oldemail, newemail);
+        setUser({ ...user, email: oldemail, new_email: newemail });
+        setEditing(false);
+      } catch (error) {
+        console.error('Error updating email:', error);
+      }
+    } else if (field === 'password') {
+      console.log('edit password');
+      try {
+        console.log(oldPassword, newpassword);
+        await updatePasswordInAPI(oldPassword, newpassword);
+        setUser({
+          ...user,
+          old_password: oldPassword,
+          new_password: newpassword,
+        });
+        setEditing(false);
+      } catch (error) {
+        console.error('Error updating password:', error);
+      }
+    }
+  };
+
+  const fetchUserFromAPI = async () => {
+    const response = await fetch(
+      `${process.env.REACT_APP_SERVER_BE}/get_user_details`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: lsemail }),
+      }
+    );
+    if (response.ok) {
+      const userData = await response.json();
+      console.log(userData);
+      return userData;
+    } else {
+      throw new Error('Failed to fetch user details');
+    }
+  };
+
+  const updateEmailInAPI = async (newEmail, oldemail) => {
+    console.log('hit email update endpoint');
+    console.log(newEmail, oldemail);
+    const response = await fetch(
+      `${process.env.REACT_APP_SERVER_BE}/update_user_info`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: newEmail, new_email: oldemail }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to update email');
+    }
+    if (response.ok) {
+      localStorage.setItem('email', oldemail);
+      console.log('updated email');
+    }
+  };
+
+  const updatePasswordInAPI = async (oldpassword, newPassword) => {
+    console.log(oldpassword, newPassword);
+    const response = await fetch(
+      `${process.env.REACT_APP_SERVER_BE}/update_password`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: oldemail,
+          new_password: newPassword,
+          old_password: oldpassword,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to update password');
+    }
+  };
+
   if (isLoading) {
     return <CircularProgress />;
   }
-
   return (
-    isAuthenticated && (
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        marginTop={4}
-      >
-        <Avatar
-          alt={user.name}
-          src={user.picture}
-          sx={{ width: 100, height: 100 }}
-        />
-        <Typography variant="h4" marginTop={2}>
-          {user.name}
-        </Typography>
-        <Typography variant="body1" marginTop={1}>
-          {user.email}
-        </Typography>
-      </Box>
-    )
+    <Grid container justifyContent="center" spacing={2}>
+      <Grid item xs={12} sm={8} md={6}>
+        <Box
+          flexDirection="column"
+          marginTop={4}
+          padding={4}
+          boxShadow={3}
+          bgcolor="white"
+          borderRadius={8}
+        >
+          <Typography variant="h4" gutterBottom>
+            Profile Details
+          </Typography>
+          <Box display="flex" alignItems="center" marginBottom="1rem">
+            <Typography
+              variant="body1"
+              style={{ minWidth: '120px', marginRight: '1rem' }}
+            >
+              <strong>First Name:</strong>
+            </Typography>
+            <Typography variant="body1">{firstname}</Typography>
+          </Box>
+          <Box display="flex" alignItems="center" marginBottom="1rem">
+            <Typography
+              variant="body1"
+              style={{ minWidth: '120px', marginRight: '1rem' }}
+            >
+              <strong>Last Name:</strong>
+            </Typography>
+            <Typography variant="body1">{lastname}</Typography>
+          </Box>
+          <Box display="flex" alignItems="center" marginBottom="1rem">
+            <Typography
+              variant="body1"
+              style={{ minWidth: '120px', marginRight: '1rem' }}
+            >
+              <strong>Email:</strong>
+            </Typography>
+            {editing ? (
+              <>
+                <TextField
+                  value={oldemail}
+                  label="old Email"
+                  onChange={(e) => setoldEmail(e.target.value)}
+                />
+                <TextField
+                  value={newemail}
+                  label="new Email"
+                  onChange={(e) => setnewemail(e.target.value)}
+                />
+              </>
+            ) : (
+              <Typography variant="body1">{user.email}</Typography>
+            )}
+            {editing ? (
+              <IconButton onClick={() => handleEditClick('email')}>
+                <EditIcon />
+              </IconButton>
+            ) : (
+              <IconButton onClick={() => setEditing(true)}>
+                <EditIcon />
+              </IconButton>
+            )}
+          </Box>
+          <Box display="flex" alignItems="center" marginBottom="1rem">
+            <Typography
+              variant="body1"
+              style={{ minWidth: '120px', marginRight: '1rem' }}
+            >
+              <strong>Password:</strong>
+            </Typography>
+            {editing ? (
+              <>
+                <TextField
+                  label="Old Password"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  type="password"
+                />
+                <TextField
+                  label="New Password"
+                  value={newpassword}
+                  onChange={(e) => setnewPassword(e.target.value)}
+                  type="password"
+                  sx={{ mr: 2 }}
+                />
+              </>
+            ) : (
+              <Typography variant="body1">**********</Typography>
+            )}
+            {editing ? (
+              <IconButton onClick={() => handleEditClick('password')}>
+                <EditIcon />
+              </IconButton>
+            ) : (
+              <IconButton onClick={() => setEditing(true)}>
+                <EditIcon />
+              </IconButton>
+            )}
+          </Box>
+          {editing && (
+            <Box>
+              <Button
+                variant="contained"
+                onClick={() => handleEditClick('email')}
+                style={{ marginRight: '1rem' }}
+              >
+                Save Email
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => handleEditClick('password')}
+              >
+                Save Password
+              </Button>
+            </Box>
+          )}
+        </Box>
+      </Grid>
+    </Grid>
   );
 };
 
