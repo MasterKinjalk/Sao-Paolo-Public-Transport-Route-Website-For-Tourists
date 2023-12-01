@@ -39,6 +39,7 @@ const Feedback = () => {
   const [pastData, setpastData] = useState(null);
   const [previousReview, setPreviousReview] = useState('');
   const [pastFeedback, setPastFeedback] = useState(null);
+  const [editSubmit, seteditSubmit] = useState(false);
   const smallScreen = useMediaQuery('(max-width:600px)');
 
   const userEmail = localStorage.getItem('email');
@@ -139,41 +140,51 @@ const Feedback = () => {
     );
 
     if (response.ok) {
-      // Handle successful submission: show a success message, etc.
       toast.success('Feedback submitted successfully');
+      const resp = await response.json();
+      console.log(resp);
     } else {
-      // Handle errors
       toast.error('Failed to submit feedback');
     }
 
-    // After successful submission, reset the dropdown and text field
     setSelectedName('');
     setReview('');
     setPreviousReview('');
   };
 
-  const handleEditFeedback = async () => {
-    if (!userEmail || !selectedName || !review) {
+  const handleEditFeedback = async (id) => {
+    const updatedPastData = pastData.filter((item) => item.feedback_id === id);
+    if (!userEmail || !updatedPastData) {
       console.error('User email, selected name, or review is missing');
       return;
     }
+    // const updatedPastData = pastData.filter((item) => item.feedback_id === id);
+    console.log('edit handler hit');
+    console.log(updatedPastData);
+    localStorage.setItem('feedback_id', id);
+    setReview(updatedPastData[0].feedback);
+    seteditSubmit(true);
+  };
 
+  const handleEditSubmit = async () => {
     try {
-      const selectedUser = sample.find((user) => user.name === selectedName);
-      if (!selectedUser) {
-        console.error('Selected user not found in the sample');
-        return;
-      }
+      // const selectedUser = sample.find((user) => user.name === selectedName);
+      // if (!selectedUser) {
+      //   console.error('Selected user not found in the sample');
+      //   return;
+      // }
+      const id = localStorage.getItem('feedback_id');
+      console.log(id);
 
       const response = await fetch(
-        `${process.env.REACT_APP_SERVER_BE}/edit_feedback/${selectedUser.id}`,
+        `${process.env.REACT_APP_SERVER_BE}/edit_feedback/feedback_id`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            feedback_id: selectedUser.id,
+            feedback_id: id,
             feedback_text: review,
           }),
         }
@@ -181,6 +192,8 @@ const Feedback = () => {
 
       if (response.ok) {
         toast.success('Feedback updated successfully');
+        localStorage.removeItem('feedback_id');
+        seteditSubmit(false);
       } else {
         throw new Error('Failed to update feedback');
       }
@@ -190,29 +203,33 @@ const Feedback = () => {
     }
   };
 
-  const handleDeleteHistory = async () => {
-    if (!userEmail || !selectedName) {
+  const handleDeleteHistory = async (id) => {
+    if (!userEmail) {
       console.error('User email or selected name is missing');
       return;
     }
 
     try {
-      const selectedUser = sample.find((user) => user.name === selectedName);
-      if (!selectedUser) {
-        console.error('Selected user not found in the sample');
-        return;
-      }
-
       const response = await fetch(
-        `${process.env.REACT_APP_SERVER_BE}/delete_feedback/${selectedUser.id}`,
+        `${process.env.REACT_APP_SERVER_BE}/delete_feedback`,
         {
-          method: 'DELETE',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ feedback_id: id }),
         }
       );
 
       if (response.ok) {
         toast.success('Feedback deleted successfully');
-        // Optionally update UI or perform actions after successful deletion
+        const updatedPastData = pastData.filter(
+          (item) => item.feedback_id !== id
+        );
+        setpastData(updatedPastData);
+        //  setPastFeedback((prevFeedback) =>
+        //    prevFeedback.filter((feedback) => feedback.feedback_id !== id)
+        //  );
       } else {
         throw new Error('Failed to delete feedback');
       }
@@ -224,11 +241,11 @@ const Feedback = () => {
 
   return (
     <Grid container justifyContent="center">
-      <Grid item xs={12} md={8}>
+      <Grid item xs={12} md={7}>
         <ToastContainer />
         <Paper
           sx={{
-            maxWidth: 400,
+            maxWidth: 600,
             margin: 'auto',
             padding: 2,
             marginTop: '2rem',
@@ -239,8 +256,8 @@ const Feedback = () => {
             value={selectedName}
             onChange={(event, newValue) => {
               setSelectedName(newValue);
-              setReview(''); // Clear review when a new name is selected
-              // setPreviousReview(''); // Clear previous review
+              setReview('');
+              // setPreviousReview('');
             }}
             options={sample}
             getOptionLabel={(option) => (option && option.name) || ''}
@@ -257,17 +274,30 @@ const Feedback = () => {
             rows={4}
             sx={{ marginTop: '1rem' }}
           />
-          <Button
-            variant="contained"
-            onClick={handleSubmit}
-            sx={{ marginTop: '1rem' }}
-          >
-            Submit
-          </Button>
+          {!editSubmit ? (
+            <Button
+              variant="contained"
+              onClick={handleSubmit}
+              sx={{ marginTop: '1rem' }}
+            >
+              Submit
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              onClick={handleEditSubmit}
+              sx={{ marginTop: '1rem' }}
+            >
+              Submit Edit
+            </Button>
+          )}
         </Paper>
       </Grid>
 
-      <Grid item xs={12} md={4}>
+      <Grid item xs={12} md={5}>
+        <Typography variant="h4" sx={{ margin: 2, fontStyle: 'italic' }}>
+          Trip History
+        </Typography>
         <Box sx={{ padding: 2 }}>
           {pastData &&
             pastData.map((data) => (
@@ -277,12 +307,12 @@ const Feedback = () => {
                   <Typography variant="body1">{`Feedback: ${data.feedback}`}</Typography>
                 </div>
                 <div sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  {/* <Button onClick={() => handleViewFeedback(feedbackItem)}>
+                  <Button onClick={() => handleEditFeedback(data.feedback_id)}>
                     View Feedback
-                  </Button> */}
-                  {/* <Button onClick={() => handleDeleteFeedback(feedbackItem)}>
+                  </Button>
+                  <Button onClick={() => handleDeleteHistory(data.feedback_id)}>
                     Delete
-                  </Button> */}
+                  </Button>
                 </div>
               </HistoryCard>
             ))}
