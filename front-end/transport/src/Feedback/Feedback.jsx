@@ -32,6 +32,7 @@ const HistoryCard = styled(Paper)(({ theme }) => ({
 }));
 
 const lsemail = localStorage.getItem('email');
+
 const Feedback = () => {
   const [selectedName, setSelectedName] = useState('');
   const [review, setReview] = useState('');
@@ -42,8 +43,8 @@ const Feedback = () => {
   const [editSubmit, seteditSubmit] = useState(false);
   const smallScreen = useMediaQuery('(max-width:600px)');
 
-  const userEmail = localStorage.getItem('email');
-  console.log(userEmail);
+  // const userEmail = localStorage.getItem('email');
+  // console.log(userEmail);
 
   useEffect(() => {
     const getFeedback = async () => {
@@ -154,7 +155,7 @@ const Feedback = () => {
 
   const handleEditFeedback = async (id) => {
     const updatedPastData = pastData.filter((item) => item.feedback_id === id);
-    if (!userEmail || !updatedPastData) {
+    if (!lsemail || !updatedPastData) {
       console.error('User email, selected name, or review is missing');
       return;
     }
@@ -177,7 +178,7 @@ const Feedback = () => {
       console.log(id);
 
       const response = await fetch(
-        `${process.env.REACT_APP_SERVER_BE}/edit_feedback/feedback_id`,
+        `${process.env.REACT_APP_SERVER_BE}/edit_feedback`,
         {
           method: 'POST',
           headers: {
@@ -204,7 +205,7 @@ const Feedback = () => {
   };
 
   const handleDeleteHistory = async (id) => {
-    if (!userEmail) {
+    if (!lsemail) {
       console.error('User email or selected name is missing');
       return;
     }
