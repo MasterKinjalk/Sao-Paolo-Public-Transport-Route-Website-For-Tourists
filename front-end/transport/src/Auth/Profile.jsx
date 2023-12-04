@@ -9,6 +9,8 @@ import {
   Grid,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -21,22 +23,22 @@ const Profile = () => {
   const [lastname, setLastname] = useState('');
   const [firstname, setFirstname] = useState('');
 
-  const lsemail = localStorage.getItem('email');
-  useEffect(() => {
-    const fetchUserDetails = async () => {
-      try {
-        const userData = await fetchUserFromAPI();
-        setUser(userData);
-        setoldEmail(userData.email || '');
-        setFirstname(userData.first_name || '');
-        setLastname(userData.last_name || '');
-      } catch (error) {
-        console.error('Error fetching user details:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchUserDetails = async () => {
+    console.log('fetching user details');
+    try {
+      const userData = await fetchUserFromAPI();
+      setUser(userData);
+      setoldEmail(userData.email || '');
+      setFirstname(userData.first_name || '');
+      setLastname(userData.last_name || '');
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchUserDetails();
   }, []);
 
@@ -69,6 +71,7 @@ const Profile = () => {
   };
 
   const fetchUserFromAPI = async () => {
+    // console.log(lsemail);
     const response = await fetch(
       `${process.env.REACT_APP_SERVER_BE}/get_user_details`,
       {
@@ -76,14 +79,16 @@ const Profile = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: lsemail }),
+        body: JSON.stringify({ email: localStorage.getItem('email') }),
       }
     );
     if (response.ok) {
       const userData = await response.json();
+      // setUser(userData);
       console.log(userData);
       return userData;
     } else {
+      console.error(await response.json());
       throw new Error('Failed to fetch user details');
     }
   };
@@ -103,11 +108,17 @@ const Profile = () => {
     );
 
     if (!response.ok) {
+      const resp = await response.json();
+      console.error(resp);
+      toast.error(resp.error);
       throw new Error('Failed to update email');
     }
     if (response.ok) {
+      console.log(localStorage.getItem('email'));
       localStorage.setItem('email', oldemail);
+      console.log(localStorage.getItem('email'));
       console.log('updated email');
+      await fetchUserDetails();
     }
   };
 
@@ -129,8 +140,12 @@ const Profile = () => {
     );
 
     if (!response.ok) {
+      const resp = await response.json();
+      console.error(resp);
+      toast.error(resp.error);
       throw new Error('Failed to update password');
     }
+    await fetchUserDetails();
   };
 
   if (isLoading) {
@@ -138,6 +153,7 @@ const Profile = () => {
   }
   return (
     <Grid container justifyContent="center" spacing={2}>
+      <ToastContainer />
       <Grid item xs={12} sm={8} md={6}>
         <Box
           flexDirection="column"

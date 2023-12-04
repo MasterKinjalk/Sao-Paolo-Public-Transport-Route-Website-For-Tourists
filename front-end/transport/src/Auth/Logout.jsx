@@ -3,8 +3,10 @@ import { Button } from '@mui/material';
 
 const LogoutButton = ({ authstate }) => {
   const handleLogout = () => {
-    localStorage.removeItem('loginstatus');
-    localStorage.removeItem('email');
+    // localStorage.removeItem('loginstatus');
+    // localStorage.removeItem('email');
+    // localStorage.removeItem('coordinates');
+    localStorage.clear();
     authstate(false);
 
     console.log('Logout clicked');

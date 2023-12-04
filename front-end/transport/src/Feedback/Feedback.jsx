@@ -15,13 +15,15 @@ import { styled } from '@mui/system';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const sample = [
-  { id: '1', name: 'chennai' },
-  { id: '2', name: 'chicago' },
-  { id: '3', name: 'test3' },
-  { id: '4', name: 'test4' },
-  { name: '1012-10-1', id: '5' },
-];
+// const sample = [
+//   { id: '1', name: 'chennai' },
+//   { id: '2', name: 'chicago' },
+//   { id: '3', name: 'test3' },
+//   { id: '4', name: 'test4' },
+//   { name: '1012-10-1', id: '5' },
+// ];
+
+//TODO: use trip id for dropdown and not sample
 
 const HistoryCard = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -46,26 +48,27 @@ const Feedback = () => {
   // const userEmail = localStorage.getItem('email');
   // console.log(userEmail);
 
-  useEffect(() => {
-    const getFeedback = async () => {
-      const response = await fetch(
-        `${process.env.REACT_APP_SERVER_BE}/feedback`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email: lsemail }),
-        }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setpastData(data);
-        console.log(data);
-      } else {
-        throw new Error('Failed to fetch feedback');
+  const getFeedback = async () => {
+    const response = await fetch(
+      `${process.env.REACT_APP_SERVER_BE}/feedback`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: localStorage.getItem('email') }),
       }
-    };
+    );
+    if (response.ok) {
+      const data = await response.json();
+      setpastData(data);
+      console.log(data);
+    } else {
+      throw new Error('Failed to fetch feedback');
+    }
+  };
+
+  useEffect(() => {
     const getTrips = async () => {
       const response = await fetch(
         `${process.env.REACT_APP_SERVER_BE}/my_trips`,
@@ -74,12 +77,13 @@ const Feedback = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ email: lsemail }),
+          body: JSON.stringify({ email: localStorage.getItem('email') }),
         }
       );
       if (response.ok) {
         const data = await response.json();
         Settrips(data); // for my trips and trip history id
+        console.log('trip data');
         console.log(data);
       } else {
         throw new Error('Failed to fetch feedback');
@@ -135,7 +139,7 @@ const Feedback = () => {
         body: JSON.stringify({
           trip_id: selectedName.name,
           feedback: review,
-          email: lsemail,
+          email: localStorage.getItem('email'),
         }),
       }
     );
@@ -144,6 +148,7 @@ const Feedback = () => {
       toast.success('Feedback submitted successfully');
       const resp = await response.json();
       console.log(resp);
+      getFeedback();
     } else {
       toast.error('Failed to submit feedback');
     }
@@ -155,7 +160,7 @@ const Feedback = () => {
 
   const handleEditFeedback = async (id) => {
     const updatedPastData = pastData.filter((item) => item.feedback_id === id);
-    if (!lsemail || !updatedPastData) {
+    if (!localStorage.getItem('email') || !updatedPastData) {
       console.error('User email, selected name, or review is missing');
       return;
     }
@@ -205,7 +210,7 @@ const Feedback = () => {
   };
 
   const handleDeleteHistory = async (id) => {
-    if (!lsemail) {
+    if (!localStorage.getItem('email')) {
       console.error('User email or selected name is missing');
       return;
     }
@@ -242,58 +247,68 @@ const Feedback = () => {
 
   return (
     <Grid container justifyContent="center">
-      <Grid item xs={12} md={7}>
-        <ToastContainer />
-        <Paper
-          sx={{
-            maxWidth: 600,
-            margin: 'auto',
-            padding: 2,
-            marginTop: '2rem',
-            marginBottom: '2rem',
-          }}
-        >
-          <Autocomplete
-            value={selectedName}
-            onChange={(event, newValue) => {
-              setSelectedName(newValue);
-              setReview('');
-              // setPreviousReview('');
+      {trips && trips.length > 0 ? (
+        <Grid item xs={12} md={7}>
+          <ToastContainer />
+          <Paper
+            sx={{
+              maxWidth: 600,
+              margin: 'auto',
+              padding: 2,
+              marginTop: '2rem',
+              marginBottom: '2rem',
             }}
-            options={sample}
-            getOptionLabel={(option) => (option && option.name) || ''}
-            renderInput={(params) => (
-              <TextField {...params} label="Select a name" fullWidth />
+          >
+            <Autocomplete
+              value={selectedName}
+              onChange={(event, newValue) => {
+                setSelectedName(newValue);
+                setReview('');
+                // setPreviousReview('');
+              }}
+              options={trips}
+              getOptionLabel={(option) =>
+                (option && option[3] + ' -> ' + option[2]) || ''
+              }
+              renderInput={(params) => (
+                <TextField {...params} label="Select a trip id" fullWidth />
+              )}
+            />
+            <TextField
+              label="Write a Review"
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
+              multiline
+              fullWidth
+              rows={4}
+              sx={{ marginTop: '1rem' }}
+            />
+            {!editSubmit ? (
+              <Button
+                variant="contained"
+                onClick={handleSubmit}
+                sx={{ marginTop: '1rem' }}
+              >
+                Submit
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                onClick={handleEditSubmit}
+                sx={{ marginTop: '1rem' }}
+              >
+                Submit Edit
+              </Button>
             )}
-          />
-          <TextField
-            label="Write a Review"
-            value={review}
-            onChange={(e) => setReview(e.target.value)}
-            multiline
-            fullWidth
-            rows={4}
-            sx={{ marginTop: '1rem' }}
-          />
-          {!editSubmit ? (
-            <Button
-              variant="contained"
-              onClick={handleSubmit}
-              sx={{ marginTop: '1rem' }}
-            >
-              Submit
-            </Button>
-          ) : (
-            <Button
-              variant="contained"
-              onClick={handleEditSubmit}
-              sx={{ marginTop: '1rem' }}
-            >
-              Submit Edit
-            </Button>
-          )}
-        </Paper>
-      </Grid>
+          </Paper>
+        </Grid>
+      ) : (
+        <Grid item xs={12} md={7}>
+          <Typography variant="h6">
+            Please go to the book page to create trips first.
+          </Typography>
+        </Grid>
+      )}
 
       <Grid item xs={12} md={5}>
         <Typography variant="h4" sx={{ margin: 2, fontStyle: 'italic' }}>

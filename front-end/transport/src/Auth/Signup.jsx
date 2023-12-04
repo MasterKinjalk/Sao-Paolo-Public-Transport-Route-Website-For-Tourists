@@ -45,7 +45,7 @@ const SignupPage = () => {
       } else {
         const errorData = await response.json();
         console.log(errorData);
-        setSignupError(errorData.message || 'Signup failed');
+        setSignupError(errorData.error || 'Signup failed');
       }
     } catch (error) {
       console.error('Signup error:', error);
