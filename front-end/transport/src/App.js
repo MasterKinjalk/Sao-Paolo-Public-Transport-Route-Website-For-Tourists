@@ -5,6 +5,7 @@ import LoginPage from './Auth/LoginPage.jsx';
 import Profile from './Auth/Profile.jsx';
 import MapC from './Map/Map.jsx';
 import Feedback from './Feedback/Feedback.jsx';
+import RoutesTypes from './Book/routesTypes.jsx';
 import NavigateMap from './Map/NavigateMap.jsx';
 import SignupPage from './Auth/Signup.jsx';
 import Booking from './Book/Booking.jsx';
@@ -137,6 +138,9 @@ function App() {
       <ListItem component={Link} to="/book">
         <ListItemText primary="Plan Trip" />
       </ListItem>
+      <ListItem component={Link} to="/routeType">
+        <ListItemText primary="Route Types" />
+      </ListItem>
     </List>
   );
 
@@ -144,6 +148,7 @@ function App() {
     // { to: '/map', text: 'Map' },
     { to: '/navigateMap', text: 'Navigate Map' },
     { to: '/plotMap', text: 'Plot Map' },
+    { to: '/routeType', text: 'Route Type' },
   ];
 
   const renderMenuItems = () => {
@@ -334,6 +339,10 @@ function App() {
         <Route
           path="/feedback"
           element={isAuthenticated ? <Feedback /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/routeType"
+          element={isAuthenticated ? <RoutesTypes /> : <Navigate to="/login" />}
         />
       </Routes>
     </div>
