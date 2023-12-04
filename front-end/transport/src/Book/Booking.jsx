@@ -8,6 +8,8 @@ import {
   CardContent,
   Typography,
   IconButton,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -40,9 +42,26 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   },
 }));
 
+const bookType = [
+  {
+    id: 1,
+    type: 'Bus',
+  },
+  {
+    id: 2,
+    type: 'Metro',
+  },
+  {
+    id: 3,
+    type: 'Train',
+  },
+];
 const Booking = () => {
   const [originOptions, setOriginOptions] = useState([]);
   const [destinationOptions, setDestinationOptions] = useState([]);
+  const [latestTransportHeadway, setLatestTransportHeadway] = useState(null);
+  const [routeTypedata, setrouteTypedata] = useState(null);
+
   const [selectedorigin, setselectedOrigin] = useState(null);
   const [selecteddestination, setselectedDestination] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,16 +69,17 @@ const Booking = () => {
   const [bookingHistory, setBookingHistory] = useState([]);
   const [headway, setheadway] = useState(null);
   const [global, setGlobal] = useState(null);
-  // const bookingHistory = [
-  //   {
-  //     id: 1,
-  //     details: 'You booked a ride from A to B',
-  //   },
-  //   {
-  //     id: 2,
-  //     details: 'You booked a ride from C to D',
-  //   },
-  // ];
+  const [selectedOption, setSelectedOption] = useState('');
+  // const secondsToMinutes = (seconds) => {
+  //   return Math.floor(seconds / 60);
+  // };
+
+  const handleDropdownChange = async (event) => {
+    console.log(event.target.value);
+    setSelectedOption(event.target.value);
+    console.log('hit dropdown');
+    await fetchType(event.target.value);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,6 +105,30 @@ const Booking = () => {
     };
     fetchData();
   }, []);
+
+  // const entireTripHandler = async () => {
+  //   console.log(tripPossible.trip_id);
+  //   try {
+  //     const response = await fetch(`${process.env.REACT_APP_SERVER_BE}/trip`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+
+  //       body: JSON.stringify({ trip_id: tripPossible.trip_id }),
+  //     });
+  //     if (!response.ok) {
+  //       console.log(response);
+  //       console.log(await response.json());
+  //       throw new Error('Network response was not ok');
+  //     }
+  //     const data = await response.text();
+  //     console.log('entire trip success');
+  //     console.log(data);
+  //   } catch (error) {
+  //     console.error('Error fetching booking history:', error);
+  //   }
+  // };
 
   const fetchBookingHistory = async () => {
     try {
@@ -138,6 +182,27 @@ const Booking = () => {
   //   }
   // };
 
+  const fetchType = async (type) => {
+    const response = await fetch(
+      `${process.env.REACT_APP_SERVER_BE}/get_routemode_ids`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          route_type: type,
+        }),
+      }
+    );
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    setrouteTypedata(data);
+    console.log(data);
+  };
+
   const handleTripClick = async () => {
     try {
       if (!email) {
@@ -146,9 +211,17 @@ const Booking = () => {
         return;
       }
 
-      if (!selectedorigin || !selecteddestination) {
-        console.error('Please select both origin and destination');
-        toast.error('Please select both origin and destination');
+      if (
+        !selectedorigin ||
+        !selecteddestination ||
+        selectedorigin.id === selecteddestination.id
+      ) {
+        console.error(
+          'Please select both origin and destination or select different origin and destination'
+        );
+        toast.error(
+          'Please select both origin and destination or select different origin and destination'
+        );
         return;
       }
 
@@ -172,12 +245,12 @@ const Booking = () => {
       }
 
       const responseData = await response.json();
-      console.log('Planning successful:', responseData);
+      console.log('Trip possible:', responseData);
       setTripPossible(responseData);
       setGlobal(responseData.globalTripformaps);
     } catch (error) {
-      console.error('Error booking:', error);
-      toast.error('Error booking');
+      console.error('Error fetching trip possible:', error);
+      toast.error('Error fetching trip possible');
     }
   };
 
@@ -232,7 +305,6 @@ const Booking = () => {
       console.error('Error booking:', error);
       toast.error('Error booking');
     }
-
     const headway_resp = await fetch(
       `${process.env.REACT_APP_SERVER_BE}/headway_time`,
       {
@@ -250,8 +322,79 @@ const Booking = () => {
       throw new Error('Network response was not ok');
     }
     const headway_data = await headway_resp.json();
+
+    function getNextTripTime(headwaySeconds) {
+      const currentTime = new Date();
+      const cstTime = currentTime.toLocaleString('en-US', {
+        timeZone: 'America/Chicago',
+      });
+      console.log(cstTime);
+
+      const currentCSTTime = new Date(
+        currentTime.toLocaleString('en-US', { timeZone: 'America/Chicago' })
+      );
+
+      const startOfDay = new Date(
+        currentCSTTime.getFullYear(),
+        currentCSTTime.getMonth(),
+        currentCSTTime.getDate(),
+        7,
+        0,
+        0
+      ); // 7am CST
+      const endOfDay = new Date(
+        currentCSTTime.getFullYear(),
+        currentCSTTime.getMonth(),
+        currentCSTTime.getDate(),
+        23,
+        0,
+        0
+      ); // 11pm CST
+
+      // If current time is before 7 AM, set it to 7 AM CST
+      if (currentCSTTime < startOfDay) {
+        currentCSTTime.setTime(startOfDay.getTime());
+      }
+
+      const currentTimeInMinutes = (currentCSTTime - startOfDay) / (1000 * 60); // Current time in minutes since 7am CST
+
+      const headwayMinutes = headwaySeconds / 60; // Convert headway from seconds to minutes
+
+      let nextTripTime =
+        Math.ceil(currentTimeInMinutes / headwayMinutes) * headwayMinutes; // Calculate next trip time
+
+      // Ensure the next trip time is within operating hours (7am to 11pm)
+      while (
+        nextTripTime < currentTimeInMinutes ||
+        nextTripTime > (endOfDay - startOfDay) / (1000 * 60)
+      ) {
+        nextTripTime += headwayMinutes;
+      }
+
+      // Calculate hours and minutes for the next trip time
+      const nextTripDate = new Date(
+        startOfDay.getTime() + nextTripTime * 60 * 1000
+      );
+      const hours = nextTripDate.getHours();
+      const minutes = nextTripDate.getMinutes();
+
+      return `${hours.toString().padStart(2, '0')}:${minutes
+        .toString()
+        .padStart(2, '0')}`;
+    }
+
+    // Example usage with a headway of 159 seconds
+    const headwaySeconds = headway_data[0].average_headway;
+    console.log(headwaySeconds);
+    const nextTrip = getNextTripTime(headwaySeconds);
+    setLatestTransportHeadway(nextTrip);
+    console.log(`Next earliest trip time is ${nextTrip}`);
+
+    // setLatestTransportHeadway(minutes);
+
     setheadway(headway_data);
     console.log('headway', headway_data);
+    console.log('latestTrip', latestTransportHeadway);
   };
 
   const tripBookedHandler = async () => {
@@ -406,20 +549,32 @@ const Booking = () => {
                       sx={{ ...typographyStyles, marginTop: 2 }}
                       key={index}
                     >
-                      {index + 1}) {stop[1]}
+                      {index + 1}) {stop[0]}
                     </Typography>
                   ))}
+                  {headway && (
+                    <Typography>
+                      Headway Time: {latestTransportHeadway} Time with{' '}
+                      {headway[0].average_headway} seconds as headway
+                    </Typography>
+                  )}
+
                   <Button variant="contained" onClick={handleBookClick}>
                     Book Trip
                   </Button>
-                  <Button variant="contained" sx={{ marginLeft: 1 }}>
-                    <a
+                  <Button
+                    variant="contained"
+                    sx={{ marginLeft: 1 }}
+                    // onClick={entireTripHandler}
+                  >
+                    {/* <a
                       href={`${process.env.REACT_APP_SERVER_BE}/trip/${tripPossible.trip_id}`}
                       target="_blank"
                       style={{ textDecoration: 'none', color: 'white' }}
                     >
                       Entire Trip
-                    </a>
+                    </a> */}
+                    Entire Trip
                   </Button>
                   <Button
                     variant="contained"
@@ -435,6 +590,19 @@ const Booking = () => {
                     </a> */}
                     User Trip
                   </Button>
+
+                  <Select
+                    value={selectedOption}
+                    onChange={handleDropdownChange}
+                    label="Select an route type"
+                    sx={{ marginLeft: 1 }}
+                  >
+                    {bookType.map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.type}
+                      </MenuItem>
+                    ))}
+                  </Select>
                 </CardContent>
               </Card>
             ) : (
