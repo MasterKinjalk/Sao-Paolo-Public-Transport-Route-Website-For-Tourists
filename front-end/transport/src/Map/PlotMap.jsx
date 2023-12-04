@@ -8,7 +8,7 @@ const PlotMapStops = () => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          'https://cs411-team124-quertyqueries.uc.r.appspot.com/all_stops'
+          `${process.env.REACT_APP_SERVER_BE}/all_stops`
         );
         const data = await response.json();
         setMarkData(data);
