@@ -56,7 +56,7 @@ const Feedback = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: lsemail }),
+        body: JSON.stringify({ email: localStorage.getItem('email') }),
       }
     );
     if (response.ok) {
@@ -77,7 +77,7 @@ const Feedback = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ email: lsemail }),
+          body: JSON.stringify({ email: localStorage.getItem('email') }),
         }
       );
       if (response.ok) {
@@ -139,7 +139,7 @@ const Feedback = () => {
         body: JSON.stringify({
           trip_id: selectedName.name,
           feedback: review,
-          email: lsemail,
+          email: localStorage.getItem('email'),
         }),
       }
     );
@@ -160,7 +160,7 @@ const Feedback = () => {
 
   const handleEditFeedback = async (id) => {
     const updatedPastData = pastData.filter((item) => item.feedback_id === id);
-    if (!lsemail || !updatedPastData) {
+    if (!localStorage.getItem('email') || !updatedPastData) {
       console.error('User email, selected name, or review is missing');
       return;
     }
@@ -210,7 +210,7 @@ const Feedback = () => {
   };
 
   const handleDeleteHistory = async (id) => {
-    if (!lsemail) {
+    if (!localStorage.getItem('email')) {
       console.error('User email or selected name is missing');
       return;
     }
