@@ -201,7 +201,7 @@ const MapWithMarkers = ({ stopsData, centers }) => {
   // const [hoveredStop, setHoveredStop] = React.useState(null);
   const [coordinates, setCoordinates] = React.useState([]);
 
-  const f100 = stopsData.slice(0, 500);
+  const f100 = stopsData.slice(0, 1000);
 
   const handleMarkerClick = (name, lat, lon) => {
     toast(`Clicked on ${name} with lat:${lat} and lon:${lon}`, {
