@@ -9,6 +9,8 @@ import {
   Grid,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -82,10 +84,11 @@ const Profile = () => {
     );
     if (response.ok) {
       const userData = await response.json();
+      // setUser(userData);
       console.log(userData);
       return userData;
     } else {
-      console.log(response);
+      console.error(await response.json());
       throw new Error('Failed to fetch user details');
     }
   };
@@ -105,7 +108,9 @@ const Profile = () => {
     );
 
     if (!response.ok) {
-      console.error(response);
+      const resp = await response.json();
+      console.error(resp);
+      toast.error(resp.error);
       throw new Error('Failed to update email');
     }
     if (response.ok) {
@@ -135,6 +140,9 @@ const Profile = () => {
     );
 
     if (!response.ok) {
+      const resp = await response.json();
+      console.error(resp);
+      toast.error(resp.error);
       throw new Error('Failed to update password');
     }
     await fetchUserDetails();
@@ -145,6 +153,7 @@ const Profile = () => {
   }
   return (
     <Grid container justifyContent="center" spacing={2}>
+      <ToastContainer />
       <Grid item xs={12} sm={8} md={6}>
         <Box
           flexDirection="column"
