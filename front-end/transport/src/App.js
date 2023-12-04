@@ -7,6 +7,7 @@ import MapC from './Map/Map.jsx';
 import Feedback from './Feedback/Feedback.jsx';
 import NavigateMap from './Map/NavigateMap.jsx';
 import SignupPage from './Auth/Signup.jsx';
+import Booking from './Book/Booking.jsx';
 import PlotMap from './Map/PlotMap.jsx';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useEffect, useState } from 'react';
@@ -133,6 +134,9 @@ function App() {
       <ListItem component={Link} to="/feedback">
         <ListItemText primary="Feedback" />
       </ListItem>
+      <ListItem component={Link} to="/book">
+        <ListItemText primary="Plan Trip" />
+      </ListItem>
     </List>
   );
 
@@ -254,6 +258,16 @@ function App() {
                   </Menu>
                 </Box>
                 <Link
+                  to="/book"
+                  style={{
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    marginRight: '5px',
+                  }}
+                >
+                  <Button color="inherit">Plan Trips</Button>
+                </Link>
+                <Link
                   to="/feedback"
                   style={{
                     textDecoration: 'none',
@@ -312,6 +326,10 @@ function App() {
         <Route
           path="/plotMap"
           element={isAuthenticated ? <PlotMap /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/book"
+          element={isAuthenticated ? <Booking /> : <Navigate to="/login" />}
         />
         <Route
           path="/feedback"
