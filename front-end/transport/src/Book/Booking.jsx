@@ -9,8 +9,10 @@ import {
   Typography,
   IconButton,
   Select,
+  Tooltip,
   MenuItem,
 } from '@mui/material';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
 import { styled } from '@mui/system';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { ToastContainer, toast } from 'react-toastify';
@@ -25,12 +27,14 @@ const BookingCard = styled(Card)(({ theme }) => ({
     boxShadow: '0 6px 12px rgba(0, 0, 0, 0.15)',
   },
 }));
-
-const BookingCardContent = styled(CardContent)(({ theme }) => ({
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-}));
+// const CopyIconContainer = styled('div')({
+//   position: 'absolute',
+//   top: 50,
+//   right: 20,
+//   display: 'flex',
+//   flexDirection: 'column',
+//   gap: '10px',
+// });
 
 const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
@@ -42,25 +46,27 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   },
 }));
 
-const bookType = [
-  {
-    id: 1,
-    type: 'Bus',
-  },
-  {
-    id: 2,
-    type: 'Metro',
-  },
-  {
-    id: 3,
-    type: 'Train',
-  },
-];
+// const bookType = [
+//   {
+//     id: 1,
+//     type: 'Metro',
+//   },
+//   {
+//     id: 2,
+//     type: 'Train',
+//   },
+//   {
+//     id: 3,
+//     type: 'Bus',
+//   },
+// ];
 const Booking = () => {
   const [originOptions, setOriginOptions] = useState([]);
+  const [Coordinate, setCoordinate] = React.useState(null);
   const [destinationOptions, setDestinationOptions] = useState([]);
   const [latestTransportHeadway, setLatestTransportHeadway] = useState(null);
   const [routeTypedata, setrouteTypedata] = useState(null);
+  const [html, sethtml] = useState(null);
 
   const [selectedorigin, setselectedOrigin] = useState(null);
   const [selecteddestination, setselectedDestination] = useState(null);
@@ -74,11 +80,31 @@ const Booking = () => {
   //   return Math.floor(seconds / 60);
   // };
 
-  const handleDropdownChange = async (event) => {
-    console.log(event.target.value);
-    setSelectedOption(event.target.value);
-    console.log('hit dropdown');
-    await fetchType(event.target.value);
+  // const handleDropdownChange = async (event) => {
+  //   console.log(event.target.value);
+  //   setSelectedOption(event.target.value);
+  //   console.log('hit dropdown');
+  //   await fetchType(event.target.value);
+  // };
+
+  const handleCopyClick = (coordinateIndex) => {
+    const [coord1, coord2] = Coordinate;
+    const coordinate = coordinateIndex === 1 ? coord1 : coord2;
+    console.log(coordinate[0]);
+    const textToCopy = `${coordinate[0]}`;
+
+    navigator.clipboard
+      .writeText(textToCopy)
+      .then(() => {
+        console.log(
+          `Copied ${
+            coordinateIndex === 1 ? 'p1' : 'p2'
+          } coordinates to clipboard`
+        );
+      })
+      .catch((err) => {
+        console.error('Failed to copy: ', err);
+      });
   };
 
   useEffect(() => {
@@ -106,29 +132,31 @@ const Booking = () => {
     fetchData();
   }, []);
 
-  // const entireTripHandler = async () => {
-  //   console.log(tripPossible.trip_id);
-  //   try {
-  //     const response = await fetch(`${process.env.REACT_APP_SERVER_BE}/trip`, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
+  const entireTripHandler = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_SERVER_BE}/trip`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ trip_id: tripPossible.trip_id }),
+      });
+      const data = await response.text();
+      sethtml(data);
+      createAndDownloadFile(data);
+    } catch (error) {
+      console.error('Error fetching trip data:', error);
+    }
+  };
 
-  //       body: JSON.stringify({ trip_id: tripPossible.trip_id }),
-  //     });
-  //     if (!response.ok) {
-  //       console.log(response);
-  //       console.log(await response.json());
-  //       throw new Error('Network response was not ok');
-  //     }
-  //     const data = await response.text();
-  //     console.log('entire trip success');
-  //     console.log(data);
-  //   } catch (error) {
-  //     console.error('Error fetching booking history:', error);
-  //   }
-  // };
+  const createAndDownloadFile = (content) => {
+    const element = document.createElement('a');
+    const file = new Blob([content], { type: 'text/html' });
+    element.href = URL.createObjectURL(file);
+    element.download = 'entire_trip.html';
+    document.body.appendChild(element);
+    element.click();
+  };
 
   const fetchBookingHistory = async () => {
     try {
@@ -160,6 +188,18 @@ const Booking = () => {
     fetchBookingHistory();
   }, []);
 
+  React.useEffect(() => {
+    const getCoordinatesFromLocalStorage = () => {
+      const Coordinatesv = localStorage.getItem('coordinates');
+
+      if (Coordinatesv) {
+        setCoordinate(JSON.parse(Coordinatesv));
+      }
+    };
+
+    getCoordinatesFromLocalStorage();
+  }, []);
+
   const email = localStorage.getItem('email');
 
   // const TripPlannerMap = async () => {
@@ -182,26 +222,26 @@ const Booking = () => {
   //   }
   // };
 
-  const fetchType = async (type) => {
-    const response = await fetch(
-      `${process.env.REACT_APP_SERVER_BE}/get_routemode_ids`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          route_type: type,
-        }),
-      }
-    );
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    const data = await response.json();
-    setrouteTypedata(data);
-    console.log(data);
-  };
+  // const fetchType = async (type) => {
+  //   const response = await fetch(
+  //     `${process.env.REACT_APP_SERVER_BE}/get_routemode_ids`,
+  //     {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         route_type: type,
+  //       }),s
+  //     }
+  //   );
+  //   if (!response.ok) {
+  //     throw new Error('Network response was not ok');
+  //   }
+  //   const data = await response.json();
+  //   setrouteTypedata(data);
+  //   console.log(data);
+  // };
 
   const handleTripClick = async () => {
     try {
@@ -428,14 +468,11 @@ const Booking = () => {
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
-
-      const responseData = await response.json();
-      console.log('History :', responseData);
-
-      // setBookingHistory([...bookingHistory, responseData]);
+      const data = await response.text();
+      sethtml(data);
+      createAndDownloadFile(data);
     } catch (error) {
-      console.error('Error booking:', error);
-      toast.error('Error booking');
+      console.error('Error fetching trip data:', error);
     }
   };
 
@@ -467,6 +504,21 @@ const Booking = () => {
     <Grid container spacing={2} marginTop={2}>
       <ToastContainer />
       <Grid item xs={12} md={7}>
+        {/* <Typography variant="h6" marginBottom={2} sx={{ fontStyle: 'italic' }}>
+          Trip Planner
+        </Typography> */}
+        {/* <Select
+          value={selectedOption}
+          onChange={handleDropdownChange}
+          label="Select an route type"
+          sx={{ marginBottom: 2 }}
+        >
+          {bookType.map((option) => (
+            <MenuItem key={option.id} value={option.id}>
+              {option.type}
+            </MenuItem>
+          ))}
+        </Select> */}
         <BookingCard>
           <CardContent>
             <StyledAutocomplete
@@ -505,6 +557,28 @@ const Booking = () => {
             >
               Plan Trip
             </Button>
+            {Coordinate && Coordinate.length === 2 ? (
+              // <CopyIconContainer>
+              <>
+                <Tooltip title="Copy p1 coordinates" placement="left">
+                  <IconButton onClick={() => handleCopyClick(1)} size="small">
+                    <FileCopyIcon />1
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Copy p2 coordinates" placement="left">
+                  <IconButton
+                    onClick={() => handleCopyClick(2)}
+                    size="small"
+                    sx={{ marginLeft: 1 }}
+                  >
+                    <FileCopyIcon />2
+                  </IconButton>
+                </Tooltip>
+              </>
+            ) : (
+              // </CopyIconContainer>
+              ''
+            )}
 
             {/* {tripPossible && tripPossible.message && (
               <>
@@ -565,7 +639,7 @@ const Booking = () => {
                   <Button
                     variant="contained"
                     sx={{ marginLeft: 1 }}
-                    // onClick={entireTripHandler}
+                    onClick={entireTripHandler}
                   >
                     {/* <a
                       href={`${process.env.REACT_APP_SERVER_BE}/trip/${tripPossible.trip_id}`}
@@ -590,25 +664,16 @@ const Booking = () => {
                     </a> */}
                     User Trip
                   </Button>
-
-                  <Select
-                    value={selectedOption}
-                    onChange={handleDropdownChange}
-                    label="Select an route type"
-                    sx={{ marginLeft: 1 }}
-                  >
-                    {bookType.map((option) => (
-                      <MenuItem key={option.id} value={option.id}>
-                        {option.type}
-                      </MenuItem>
-                    ))}
-                  </Select>
                 </CardContent>
               </Card>
             ) : (
-              <Typography variant="subtitle1" sx={{ marginTop: 2 }}>
-                Not possible from the above 2 points
-              </Typography>
+              !tripPossible.message &&
+              selectedorigin &&
+              selecteddestination && (
+                <Typography variant="subtitle1" sx={{ marginTop: 2 }}>
+                  Not possible from the above 2 points
+                </Typography>
+              )
             )}
             {/* {selectedorigin && (
               <>
@@ -630,27 +695,29 @@ const Booking = () => {
           Booking History
         </Typography>
 
-        {bookingHistory.map((booking, index) => (
-          <div key={index} style={{ marginBottom: '12px' }}>
-            <Card style={{ display: 'flex', alignItems: 'center' }}>
-              <CardContent style={{ flex: 1 }}>
-                <Typography variant="subtitle1">{booking[0]}</Typography>
-                <Typography variant="subtitle1">{booking[1]}</Typography>
-                <Typography variant="subtitle1">{booking[2]}</Typography>
-              </CardContent>
-              {/* <IconButton
+        {bookingHistory &&
+          bookingHistory.slice(0, 5).map((booking, index) => (
+            <div key={index} style={{ marginBottom: '12px' }}>
+              <Card style={{ display: 'flex', alignItems: 'center' }}>
+                <CardContent style={{ flex: 1 }}>
+                  <Typography variant="subtitle1">{booking[0]}</Typography>
+                  <Typography variant="subtitle1">{booking[1]}</Typography>
+                  <Typography variant="subtitle1">{booking[2]}</Typography>
+                </CardContent>
+                {/* <IconButton
                 aria-label="delete"
                 style={{ marginLeft: 'auto' }}
                 // onClick={() => handleDelete(booking.id)}
               >
                 <DeleteIcon />
               </IconButton> */}
-            </Card>
-          </div>
-        ))}
+              </Card>
+            </div>
+          ))}
         {/* </CardContent> */}
         {/* </BookingCard> */}
       </Grid>
+      {/* <HtmlViewer htmlContent={html} /> */}
     </Grid>
   );
 };
