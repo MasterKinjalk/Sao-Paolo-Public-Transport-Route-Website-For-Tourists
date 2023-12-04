@@ -156,7 +156,7 @@ const LoginPage = ({ authstate }) => {
               <Typography variant="body2" sx={{ mt: 2, mb: 4 }}>
                 Don't have an account?{' '}
                 <Link to="/signup" style={{ textDecoration: 'none' }}>
-                  Sign In
+                  Sign Up
                 </Link>
               </Typography>
             </Box>
