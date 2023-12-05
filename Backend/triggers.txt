@@ -1,0 +1,38 @@
+DELIMITER //
+
+CREATE TRIGGER profanityCHeck
+BEFORE INSERT ON Users
+FOR EACH ROW
+BEGIN
+  DECLARE ckUsername BOOL;
+
+  -- Create a temporary table to store prohibited words
+  CREATE TEMPORARY TABLE IF NOT EXISTS BadWords (
+    word VARCHAR(255)
+  );
+
+  -- Populate the temporary table with a list of prohibited words
+  INSERT INTO BadWords (word)
+  VALUES
+    ('assclown'),
+    ('jerk'),
+    ('stupid'),
+    ('idiot'),  ('backdoorman'), ('ass'),('cherrypopper'),('cunt'), ('fuck'),
+    ('moron');
+
+  -- Check for profanity in both first and last names
+  SELECT COUNT(*) INTO ckUsername
+  FROM BadWords
+  WHERE (INSTR(LOWER(NEW.first_name), BadWords.word) > 0) or (INSTR(LOWER(NEW.last_name), BadWords.word) > 0);
+
+  -- Handle profanity detection
+  IF ckUsername > 0 THEN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Please choose a username that does not contain inappropriate language.';
+  END IF;
+
+  -- Drop the temporary table
+  DROP TEMPORARY TABLE IF EXISTS BadWords;
+END//
+
+DELIMITER ;

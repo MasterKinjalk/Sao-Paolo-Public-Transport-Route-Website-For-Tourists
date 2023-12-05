@@ -1,0 +1,66 @@
+
+-- Check if the trigger exists, and drop it if it does
+DROP TRIGGER IF EXISTS before_insert_books;
+
+DELIMITER //
+
+-- Create the trigger
+CREATE TRIGGER before_insert_books
+BEFORE INSERT ON Books
+FOR EACH ROW
+BEGIN
+    IF NEW.trip_id IS NOT NULL THEN
+        SET NEW.booking_time = DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL 6 HOUR);
+    END IF;
+END //
+
+DELIMITER ;
+
+-- Check if the trigger exists, and drop it if it does
+DROP TRIGGER IF EXISTS profanityCheck;
+
+DELIMITER //
+
+
+-- Create the trigger
+CREATE TRIGGER profanityCheck
+BEFORE INSERT ON Users
+FOR EACH ROW
+BEGIN
+  DECLARE ckUsername BOOL;
+
+  -- Create a temporary table to store bad words
+  CREATE TEMPORARY TABLE IF NOT EXISTS BadWords (
+    word VARCHAR(255)
+  );
+
+  -- Insert bad words into the temporary table
+  INSERT INTO BadWords (word)
+  VALUES
+    ('assclown'),
+    ('jerk'),
+    ('stupid'),
+    ('idiot'),
+    ('backdoorman'),
+    ('ass'),
+    ('cherrypopper'),
+    ('cunt'),
+    ('fuck'),
+    ('moron');
+
+  -- Check if the username contains any bad words
+  SELECT COUNT(*) INTO ckUsername
+  FROM BadWords
+  WHERE (INSTR(LOWER(NEW.first_name), BadWords.word) > 0) or (INSTR(LOWER(NEW.last_name), BadWords.word) > 0);
+
+  -- If a bad word is found, signal an error
+  IF ckUsername > 0 THEN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Please choose a username that does not contain inappropriate language.';
+  END IF;
+
+  -- Drop the temporary table
+  DROP TEMPORARY TABLE IF EXISTS BadWords;
+END //
+
+DELIMITER ;
