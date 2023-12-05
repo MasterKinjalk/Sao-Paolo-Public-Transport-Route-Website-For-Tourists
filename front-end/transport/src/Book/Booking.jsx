@@ -64,7 +64,7 @@ const Booking = () => {
   const [originOptions, setOriginOptions] = useState([]);
   const [Coordinate, setCoordinate] = React.useState(null);
   const [destinationOptions, setDestinationOptions] = useState([]);
-  const [latestTransportHeadway, setLatestTransportHeadway] = useState(null);
+  const [latestTransportHeadway, setLatestTransportHeadway] = useState('');
   const [routeTypedata, setrouteTypedata] = useState(null);
   const [html, sethtml] = useState(null);
 
@@ -178,7 +178,7 @@ const Booking = () => {
       }
       const data = await response.json();
       setBookingHistory(data);
-      console.log('history success');
+      console.log('history successfully retrieved');
       console.log(data);
     } catch (error) {
       console.error('Error fetching booking history:', error);
@@ -337,7 +337,7 @@ const Booking = () => {
       }
 
       const responseData = await response.json();
-      console.log('History :', responseData);
+      console.log('Booked :', responseData);
 
       // setBookingHistory([...bookingHistory, responseData])
       fetchBookingHistory();
@@ -362,14 +362,9 @@ const Booking = () => {
       throw new Error('Network response was not ok');
     }
     const headway_data = await headway_resp.json();
-
+    console.log(headway_data);
     function getNextTripTime(headwaySeconds) {
       const currentTime = new Date();
-      const cstTime = currentTime.toLocaleString('en-US', {
-        timeZone: 'America/Chicago',
-      });
-      console.log(cstTime);
-
       const currentCSTTime = new Date(
         currentTime.toLocaleString('en-US', { timeZone: 'America/Chicago' })
       );
@@ -381,7 +376,7 @@ const Booking = () => {
         7,
         0,
         0
-      ); // 7am CST
+      );
       const endOfDay = new Date(
         currentCSTTime.getFullYear(),
         currentCSTTime.getMonth(),
@@ -389,52 +384,46 @@ const Booking = () => {
         23,
         0,
         0
-      ); // 11pm CST
-
-      // If current time is before 7 AM, set it to 7 AM CST
-      if (currentCSTTime < startOfDay) {
-        currentCSTTime.setTime(startOfDay.getTime());
-      }
-
-      const currentTimeInMinutes = (currentCSTTime - startOfDay) / (1000 * 60); // Current time in minutes since 7am CST
-
-      const headwayMinutes = headwaySeconds / 60; // Convert headway from seconds to minutes
-
-      let nextTripTime =
-        Math.ceil(currentTimeInMinutes / headwayMinutes) * headwayMinutes; // Calculate next trip time
-
-      // Ensure the next trip time is within operating hours (7am to 11pm)
-      while (
-        nextTripTime < currentTimeInMinutes ||
-        nextTripTime > (endOfDay - startOfDay) / (1000 * 60)
-      ) {
-        nextTripTime += headwayMinutes;
-      }
-
-      // Calculate hours and minutes for the next trip time
-      const nextTripDate = new Date(
-        startOfDay.getTime() + nextTripTime * 60 * 1000
       );
-      const hours = nextTripDate.getHours();
-      const minutes = nextTripDate.getMinutes();
+      // endOfDay.setDate(endOfDay.getDate() + 1);
+      console.log(startOfDay);
+      console.log(endOfDay);
+      console.log(currentCSTTime);
+      if (currentCSTTime >= startOfDay && currentCSTTime <= endOfDay) {
+        let nextTripTime = new Date(startOfDay.getTime());
+        console.log(true);
+        console.log(nextTripTime);
 
-      return `${hours.toString().padStart(2, '0')}:${minutes
-        .toString()
-        .padStart(2, '0')}`;
+        while (nextTripTime <= currentCSTTime) {
+          nextTripTime.setTime(nextTripTime.getTime() + headwaySeconds * 1000);
+          console.log(nextTripTime);
+        }
+
+        if (nextTripTime > endOfDay) {
+          return 'No more trips today';
+        }
+
+        return nextTripTime;
+      } else {
+        return startOfDay;
+      }
     }
 
-    // Example usage with a headway of 159 seconds
-    const headwaySeconds = headway_data[0].average_headway;
-    console.log(headwaySeconds);
+    const headwaySeconds = parseFloat(headway_data[0].average_headway);
     const nextTrip = getNextTripTime(headwaySeconds);
-    setLatestTransportHeadway(nextTrip);
     console.log(`Next earliest trip time is ${nextTrip}`);
 
-    // setLatestTransportHeadway(minutes);
+    const dateString = nextTrip.toString().split(' GMT')[0];
+
+    console.log(dateString);
+
+    console.log(headwaySeconds + ' is the headway secs');
+
+    setLatestTransportHeadway(dateString);
 
     setheadway(headway_data);
     console.log('headway', headway_data);
-    console.log('latestTrip', latestTransportHeadway);
+    // console.log('latestTrip', latestTransportHeadway);
   };
 
   const tripBookedHandler = async () => {
@@ -627,10 +616,16 @@ const Booking = () => {
                     </Typography>
                   ))}
                   {headway && (
-                    <Typography>
-                      Headway Time: {latestTransportHeadway} Time with{' '}
-                      {headway[0].average_headway} seconds as headway
-                    </Typography>
+                    <>
+                      <Typography>
+                        Next Trip at: {latestTransportHeadway}
+                        {/* {headway[0].average_headway} seconds as headway */}
+                      </Typography>
+                      <Typography sx={{ marginBottom: 1 }}>
+                        Frequency: {parseFloat(headway[0].average_headway) / 60}{' '}
+                        mins
+                      </Typography>
+                    </>
                   )}
 
                   <Button variant="contained" onClick={handleBookClick}>
@@ -702,7 +697,9 @@ const Booking = () => {
                 <CardContent style={{ flex: 1 }}>
                   <Typography variant="subtitle1">{booking[0]}</Typography>
                   <Typography variant="subtitle1">{booking[1]}</Typography>
-                  <Typography variant="subtitle1">{booking[2]}</Typography>
+                  <Typography variant="subtitle1">
+                    {booking[2].replace(' GMT', '')}
+                  </Typography>
                 </CardContent>
                 {/* <IconButton
                 aria-label="delete"
