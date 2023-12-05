@@ -202,6 +202,7 @@ const Feedback = () => {
         toast.success('Feedback updated successfully');
         localStorage.removeItem('feedback_id');
         seteditSubmit(false);
+        getFeedback();
       } else {
         throw new Error('Failed to update feedback');
       }
