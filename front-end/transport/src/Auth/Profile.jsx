@@ -12,7 +12,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const Profile = () => {
+const Profile = ({ authStatus }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -118,7 +118,9 @@ const Profile = () => {
       localStorage.setItem('email', oldemail);
       console.log(localStorage.getItem('email'));
       console.log('updated email');
-      await fetchUserDetails();
+      // await fetchUserDetails();
+      localStorage.clear();
+      authStatus(false);
     }
   };
 

@@ -308,7 +308,13 @@ function App() {
         />
         <Route
           path="/profile"
-          element={isAuthenticated ? <Profile /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? (
+              <Profile authStatus={authHandler} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
         <Route
           path="/"
