@@ -1,6 +1,6 @@
 [build]
   command = "CI='' yarn build"
-  publish = "/build"
+  publish = "/front-end/transport/build"
   base ="/"
 
 [[redirects]]
