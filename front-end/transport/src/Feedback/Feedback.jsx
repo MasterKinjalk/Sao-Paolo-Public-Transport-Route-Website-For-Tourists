@@ -128,6 +128,8 @@ const Feedback = () => {
       return;
     }
     console.log(selectedName, review);
+    console.log(selectedName + ' selected name iss');
+    // const name = selectedName.name.toString();
 
     const response = await fetch(
       `${process.env.REACT_APP_SERVER_BE}/add_feedback`,
@@ -137,7 +139,7 @@ const Feedback = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          trip_id: selectedName.name,
+          trip_id: selectedName[3],
           feedback: review,
           email: localStorage.getItem('email'),
         }),
@@ -267,9 +269,12 @@ const Feedback = () => {
                 // setPreviousReview('');
               }}
               options={trips}
-              getOptionLabel={(option) =>
-                (option && option[3] + ' -> ' + option[2]) || ''
-              }
+              getOptionLabel={(option) => (option && option[3]) || ''}
+              renderOption={(props, option) => (
+                <li {...props} key={option[2]}>
+                  {option[3] + ' -> ' + option[2].replace('GMT', '')}
+                </li>
+              )}
               renderInput={(params) => (
                 <TextField {...params} label="Select a trip id" fullWidth />
               )}
