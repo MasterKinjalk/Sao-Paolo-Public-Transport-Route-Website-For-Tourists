@@ -17,7 +17,7 @@ Feel free to try the website yourself! https://cs411-124.netlify.app/login
 ## Run it locally:
 ### Backend:
 ```
-git clone https://github.com/Mohammed-Alsaad/Camping-Companion.git
+git clone https://github.com/cs411-alawini/fa23-cs411-team124-QuertyQueries.git
 cd Backend
 pip install -r /path/to/requirements.txt
 python main.py
@@ -25,6 +25,7 @@ python main.py
 
 ### Frontend:
 ```
+cd front-end/transport
 npm install -g yarn
 yarn
 yarn start
