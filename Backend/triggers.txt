@@ -1,3 +1,22 @@
+-- Check if the trigger exists, and drop it if it does
+DROP TRIGGER IF EXISTS before_insert_books;
+
+DELIMITER //
+
+-- Create the trigger
+CREATE TRIGGER before_insert_books
+BEFORE INSERT ON Books
+FOR EACH ROW
+BEGIN
+    IF NEW.trip_id IS NOT NULL THEN
+        SET NEW.booking_time = DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL 6 HOUR);
+    END IF;
+END //
+
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS profanityCHeck;
+
 DELIMITER //
 
 CREATE TRIGGER profanityCHeck
