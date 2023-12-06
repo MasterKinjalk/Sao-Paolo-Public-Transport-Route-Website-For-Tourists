@@ -1,66 +1,104 @@
-
--- Check if the trigger exists, and drop it if it does
-DROP TRIGGER IF EXISTS before_insert_books;
+DROP PROCEDURE IF EXISTS GetTripIdsByRouteType;
 
 DELIMITER //
 
--- Create the trigger
-CREATE TRIGGER before_insert_books
-BEFORE INSERT ON Books
-FOR EACH ROW
+CREATE PROCEDURE GetTripIdsByRouteType(
+    IN routeTypeInput INT,
+    OUT out_route_id VARCHAR(100),
+    OUT out_route_long_name VARCHAR(255),
+    OUT out_route_color VARCHAR(100),
+    OUT out_trip_id VARCHAR(100)
+)
 BEGIN
-    IF NEW.trip_id IS NOT NULL THEN
-        SET NEW.booking_time = DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL 6 HOUR);
-    END IF;
+    DECLARE done BOOLEAN DEFAULT FALSE;
+
+    DECLARE cursor_routes CURSOR FOR
+        SELECT DISTINCT r.route_id, r.route_long_name, r.route_color, t.trip_id
+        FROM Routes AS r
+        JOIN Trips AS t ON r.route_id = t.route_id
+        JOIN (
+            SELECT route_type
+            FROM Routes
+            ORDER BY route_type DESC
+        ) AS top_routes ON r.route_type = top_routes.route_type
+        WHERE r.route_type = routeTypeInput
+        ORDER BY r.route_long_name DESC;
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    CREATE TEMPORARY TABLE IF NOT EXISTS temp_trip_data (
+        route_id VARCHAR(100),
+        route_long_name VARCHAR(255),
+        route_color VARCHAR(100),
+        trip_id VARCHAR(100)
+    );
+
+    OPEN cursor_routes;
+
+    FETCH_LOOP: LOOP
+        FETCH cursor_routes INTO out_route_id, out_route_long_name, out_route_color, out_trip_id;
+        IF done THEN
+            LEAVE FETCH_LOOP;
+        END IF;
+
+        INSERT INTO temp_trip_data (route_id, route_long_name, route_color, trip_id)
+        VALUES (out_route_id, out_route_long_name, out_route_color, out_trip_id);
+
+    END LOOP;
+
+    CLOSE cursor_routes;
+
+    SELECT * FROM temp_trip_data;
+
+    DROP TEMPORARY TABLE IF EXISTS temp_trip_data;
 END //
 
 DELIMITER ;
 
--- Check if the trigger exists, and drop it if it does
-DROP TRIGGER IF EXISTS profanityCheck;
-
 DELIMITER //
 
+-- Check if the procedure exists, and drop it if it does
+DROP PROCEDURE IF EXISTS GetHeadwayInfo;
 
--- Create the trigger
-CREATE TRIGGER profanityCheck
-BEFORE INSERT ON Users
-FOR EACH ROW
+CREATE PROCEDURE GetHeadwayInfo(IN input_trip_id VARCHAR(255))
 BEGIN
-  DECLARE ckUsername BOOL;
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE route_id_var VARCHAR(255);
+    DECLARE average_headway_var DECIMAL(10, 2);
 
-  -- Create a temporary table to store bad words
-  CREATE TEMPORARY TABLE IF NOT EXISTS BadWords (
-    word VARCHAR(255)
-  );
+    DECLARE cur CURSOR FOR
+        SELECT t.route_id, AVG(f.headway_secs) AS average_headway
+        FROM Trips t
+        LEFT JOIN Frequencies AS f ON t.trip_id = f.trip_id
+        WHERE t.trip_id = input_trip_id
+        GROUP BY t.route_id
+        ORDER BY average_headway;
 
-  -- Insert bad words into the temporary table
-  INSERT INTO BadWords (word)
-  VALUES
-    ('assclown'),
-    ('jerk'),
-    ('stupid'),
-    ('idiot'),
-    ('backdoorman'),
-    ('ass'),
-    ('cherrypopper'),
-    ('cunt'),
-    ('fuck'),
-    ('moron');
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
-  -- Check if the username contains any bad words
-  SELECT COUNT(*) INTO ckUsername
-  FROM BadWords
-  WHERE (INSTR(LOWER(NEW.first_name), BadWords.word) > 0) or (INSTR(LOWER(NEW.last_name), BadWords.word) > 0);
+    CREATE TEMPORARY TABLE IF NOT EXISTS TempHeadwayInfo (
+        route_id VARCHAR(255),
+        average_headway DECIMAL(10, 2)
+    );
 
-  -- If a bad word is found, signal an error
-  IF ckUsername > 0 THEN
-    SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT = 'Please choose a username that does not contain inappropriate language.';
-  END IF;
+    OPEN cur;
 
-  -- Drop the temporary table
-  DROP TEMPORARY TABLE IF EXISTS BadWords;
+    read_loop: LOOP
+        FETCH cur INTO route_id_var, average_headway_var;
+
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        INSERT INTO TempHeadwayInfo (route_id, average_headway) VALUES (route_id_var, average_headway_var);
+    END LOOP;
+
+    CLOSE cur;
+
+    SELECT * FROM TempHeadwayInfo;
+
+    DROP TEMPORARY TABLE IF EXISTS TempHeadwayInfo;
 END //
 
 DELIMITER ;
+
